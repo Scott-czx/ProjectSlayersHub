@@ -234,10 +234,10 @@ function UI.Init(Config)
     -- DEBUG UI
     -- ========================================================
 
-    Tabs.Farm:CreateParagraph({
-        name = "Project Slayers 2 - Debug",
-        content = "Ferramentas de diagnóstico para descobrir a estrutura real do jogo."
-    })
+    Tabs.Farm:CreateText({
+    name = "Project Slayers 2 - Debug",
+    text = "Ferramentas de diagnóstico para descobrir a estrutura real do jogo."
+})
 
     Tabs.Farm:CreateButton({
         name = "Scan Quest NPCs",
