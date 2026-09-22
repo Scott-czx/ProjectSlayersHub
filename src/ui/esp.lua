@@ -8,13 +8,55 @@ local function NormalizeDropdownValue(option)
     return option
 end
 
+local function GetFarmService(State)
+
+    if State.FarmService then
+        return State.FarmService
+    end
+
+    if State.Services
+        and type(State.Services.Get) == "function" then
+
+        return State.Services.Get("Farm")
+
+    end
+
+    return nil
+end
+
+local function GetScanner(State)
+
+    local FarmService = GetFarmService(State)
+
+    if FarmService
+        and type(FarmService.GetScanner) == "function" then
+
+        return FarmService.GetScanner()
+
+    end
+
+    if State.Scanner then
+        return State.Scanner
+    end
+
+    return nil
+end
+
 function ESPUI.Init(Tab, State)
+
+    if Tab == nil then
+        error("[ESPUI] Tab inválida.")
+    end
+
+    if type(State) ~= "table" then
+        error("[ESPUI] State inválido.")
+    end
 
     print("[UI] ESP inicializado.")
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- PLAYER ESP
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "Player ESP",
@@ -24,24 +66,18 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Player ESP",
         value = false,
-
         callback = function(value)
             State.PlayerESP = value
-
-            print(
-                "[ESP] Player ESP:",
-                value and "ON" or "OFF"
-            )
+            print("[ESP] Player ESP:", value and "ON" or "OFF")
         end,
     })
 
     Tab:CreateColorPicker({
         name = "Player ESP Color",
-        color = State.PlayerESPColor or Color3.fromRGB(255, 255, 255),
-
+        color = State.PlayerESPColor
+            or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.PlayerESPColor = value
-
             print("[ESP] Player ESP Color alterada.")
         end,
     })
@@ -49,10 +85,8 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Show Local Player",
         value = false,
-
         callback = function(value)
             State.ShowLocalPlayer = value
-
             print(
                 "[ESP] Show Local Player:",
                 value and "ON" or "OFF"
@@ -60,9 +94,9 @@ function ESPUI.Init(Tab, State)
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- MOB ESP
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "Mob ESP",
@@ -72,31 +106,25 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Mob ESP",
         value = false,
-
         callback = function(value)
             State.MobESP = value
-
-            print(
-                "[ESP] Mob ESP:",
-                value and "ON" or "OFF"
-            )
+            print("[ESP] Mob ESP:", value and "ON" or "OFF")
         end,
     })
 
     Tab:CreateColorPicker({
         name = "Mob ESP Color",
-        color = State.MobESPColor or Color3.fromRGB(255, 255, 255),
-
+        color = State.MobESPColor
+            or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.MobESPColor = value
-
             print("[ESP] Mob ESP Color alterada.")
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- NPC ESP
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "NPC ESP",
@@ -106,31 +134,146 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "NPC ESP",
         value = false,
-
         callback = function(value)
             State.NPCESP = value
-
-            print(
-                "[ESP] NPC ESP:",
-                value and "ON" or "OFF"
-            )
+            print("[ESP] NPC ESP:", value and "ON" or "OFF")
         end,
     })
 
     Tab:CreateColorPicker({
         name = "NPC ESP Color",
-        color = State.NPCESPColor or Color3.fromRGB(255, 255, 255),
-
+        color = State.NPCESPColor
+            or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.NPCESPColor = value
-
             print("[ESP] NPC ESP Color alterada.")
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
+    -- SCANNER INTEGRATION
+    -- ========================================================
+
+    Tab:CreateText({
+        name = "Scanner Integration",
+        text = "Consulta os resultados padronizados do Scanner."
+    })
+
+    Tab:CreateButton({
+        name = "Refresh Scanner Entities",
+        description = "Consulta as entidades encontradas pelo Scanner.",
+        callback = function()
+
+            local FarmService = GetFarmService(State)
+
+            if FarmService == nil then
+                warn("[ESP] FarmService não disponível.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return FarmService.GetScannedEntities()
+            end)
+
+            if not success then
+                warn(
+                    "[ESP] Falha ao consultar Scanner:",
+                    result
+                )
+                return
+            end
+
+            print("================================")
+            print("[ESP] SCANNER ENTITIES")
+            print("================================")
+            print(
+                "Total:",
+                #result
+            )
+
+            for index, entity in ipairs(result) do
+
+                print(
+                    "[" .. index .. "]",
+                    entity.Name,
+                    "|",
+                    entity.Type,
+                    "|",
+                    entity.FullName
+                )
+
+            end
+
+            print("================================")
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Refresh Scanner NPCs",
+        description = "Consulta os NPCs encontrados pelo Scanner.",
+        callback = function()
+
+            local FarmService = GetFarmService(State)
+
+            if FarmService == nil then
+                warn("[ESP] FarmService não disponível.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return FarmService.GetScannedQuestNPCs()
+            end)
+
+            if not success then
+                warn(
+                    "[ESP] Falha ao consultar NPCs:",
+                    result
+                )
+                return
+            end
+
+            print("================================")
+            print("[ESP] SCANNER QUEST NPCs")
+            print("================================")
+            print(
+                "Total:",
+                #result
+            )
+
+            for index, npc in ipairs(result) do
+
+                print(
+                    "[" .. index .. "]",
+                    npc.Name,
+                    "|",
+                    npc.FullName
+                )
+
+            end
+
+            print("================================")
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Scanner Debug",
+        description = "Mostra o estado do Scanner através do FarmService.",
+        callback = function()
+
+            local FarmService = GetFarmService(State)
+
+            if FarmService == nil then
+                warn("[ESP] FarmService não disponível.")
+                return
+            end
+
+            FarmService.DebugScanner()
+        end,
+    })
+
+    -- ========================================================
     -- ESP TARGET
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "ESP Target",
@@ -144,8 +287,8 @@ function ESPUI.Init(Tab, State)
             "Nenhum jogador encontrado"
         },
         value = "Nenhum jogador encontrado",
-
         callback = function(option)
+
             local value = NormalizeDropdownValue(option)
 
             if value == "Nenhum jogador encontrado" then
@@ -166,23 +309,17 @@ function ESPUI.Init(Tab, State)
     Tab:CreateButton({
         name = "Refresh",
         description = "Solicita atualização da lista de jogadores.",
-
         callback = function()
             State.ESPRefreshRequested = true
-
-            print(
-                "[ESP] Atualização de jogadores solicitada."
-            )
+            print("[ESP] Atualização de jogadores solicitada.")
         end,
     })
 
     Tab:CreateToggle({
         name = "ESP Single Player",
         value = false,
-
         callback = function(value)
             State.ESPSinglePlayer = value
-
             print(
                 "[ESP] ESP Single Player:",
                 value and "ON" or "OFF"
@@ -193,10 +330,8 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "ESP Nearest Only",
         value = false,
-
         callback = function(value)
             State.ESPNearestOnly = value
-
             print(
                 "[ESP] ESP Nearest Only:",
                 value and "ON" or "OFF"
@@ -204,9 +339,9 @@ function ESPUI.Init(Tab, State)
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- ESP CONFIG
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "ESP Config",
@@ -216,10 +351,8 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Boxes",
         value = false,
-
         callback = function(value)
             State.ESPBoxes = value
-
             print(
                 "[ESP] Boxes:",
                 value and "ON" or "OFF"
@@ -230,10 +363,8 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Box Glow",
         value = false,
-
         callback = function(value)
             State.ESPBoxGlow = value
-
             print(
                 "[ESP] Box Glow:",
                 value and "ON" or "OFF"
@@ -244,10 +375,8 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Chams",
         value = false,
-
         callback = function(value)
             State.ESPChams = value
-
             print(
                 "[ESP] Chams:",
                 value and "ON" or "OFF"
@@ -258,7 +387,6 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Name",
         value = true,
-
         callback = function(value)
             State.ESPName = value
         end,
@@ -267,7 +395,6 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Distance",
         value = true,
-
         callback = function(value)
             State.ESPDistance = value
         end,
@@ -276,7 +403,6 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Health Bar",
         value = true,
-
         callback = function(value)
             State.ESPHealthBar = value
         end,
@@ -285,7 +411,6 @@ function ESPUI.Init(Tab, State)
     Tab:CreateToggle({
         name = "Weapon",
         value = false,
-
         callback = function(value)
             State.ESPWeapon = value
         end,
@@ -297,7 +422,6 @@ function ESPUI.Init(Tab, State)
         increment = 50,
         value = State.ESPMaxDistance or 500,
         suffix = " studs",
-
         callback = function(value)
             State.ESPMaxDistance = value
         end,
@@ -312,8 +436,8 @@ function ESPUI.Init(Tab, State)
             "2D"
         },
         value = State.ESPBoxType or "Full",
-
         callback = function(option)
+
             local value = NormalizeDropdownValue(option)
 
             State.ESPBoxType = value
@@ -325,9 +449,9 @@ function ESPUI.Init(Tab, State)
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- GLOW
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "Glow",
@@ -340,7 +464,6 @@ function ESPUI.Init(Tab, State)
         increment = 1,
         value = State.GlowTopTransparency or 50,
         suffix = "%",
-
         callback = function(value)
             State.GlowTopTransparency = value
         end,
@@ -352,15 +475,14 @@ function ESPUI.Init(Tab, State)
         increment = 1,
         value = State.GlowBottomTransparency or 50,
         suffix = "%",
-
         callback = function(value)
             State.GlowBottomTransparency = value
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- CHAMS
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "Chams",
@@ -373,7 +495,6 @@ function ESPUI.Init(Tab, State)
         increment = 1,
         value = State.ChamsFillTransparency or 50,
         suffix = "%",
-
         callback = function(value)
             State.ChamsFillTransparency = value
         end,
@@ -381,16 +502,16 @@ function ESPUI.Init(Tab, State)
 
     Tab:CreateColorPicker({
         name = "Chams Color",
-        color = State.ChamsColor or Color3.fromRGB(255, 255, 255),
-
+        color = State.ChamsColor
+            or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.ChamsColor = value
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- BOX COLORS
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "Box Colors",
@@ -399,8 +520,8 @@ function ESPUI.Init(Tab, State)
 
     Tab:CreateColorPicker({
         name = "Box Top",
-        color = State.BoxTopColor or Color3.fromRGB(255, 255, 255),
-
+        color = State.BoxTopColor
+            or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.BoxTopColor = value
         end,
@@ -408,39 +529,36 @@ function ESPUI.Init(Tab, State)
 
     Tab:CreateColorPicker({
         name = "Box Bottom",
-        color = State.BoxBottomColor or Color3.fromRGB(255, 255, 255),
-
+        color = State.BoxBottomColor
+            or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.BoxBottomColor = value
         end,
     })
 
-    ------------------------------------------------------------
+    -- ========================================================
     -- DEBUG
-    ------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "ESP Debug",
-        text = "Ferramentas de diagnóstico da configuração de ESP."
+        text = "Ferramentas de diagnóstico da configuração ESP."
     })
 
     Tab:CreateButton({
         name = "ESP Debug Test",
         description = "Mostra os valores atuais do State.",
-
         callback = function()
 
             print("================================")
             print("[ESPUI] DEBUG")
             print("================================")
-
             print("PlayerESP:", State.PlayerESP)
             print("MobESP:", State.MobESP)
             print("NPCESP:", State.NPCESP)
             print("ESPTarget:", State.ESPTarget)
             print("ESPSinglePlayer:", State.ESPSinglePlayer)
             print("ESPNearestOnly:", State.ESPNearestOnly)
-
             print("ESPBoxes:", State.ESPBoxes)
             print("ESPBoxGlow:", State.ESPBoxGlow)
             print("ESPChams:", State.ESPChams)
@@ -448,14 +566,20 @@ function ESPUI.Init(Tab, State)
             print("ESPDistance:", State.ESPDistance)
             print("ESPHealthBar:", State.ESPHealthBar)
             print("ESPWeapon:", State.ESPWeapon)
-
             print("ESPMaxDistance:", State.ESPMaxDistance)
             print("ESPBoxType:", State.ESPBoxType)
-
-            print("GlowTopTransparency:", State.GlowTopTransparency)
-            print("GlowBottomTransparency:", State.GlowBottomTransparency)
-            print("ChamsFillTransparency:", State.ChamsFillTransparency)
-
+            print(
+                "GlowTopTransparency:",
+                State.GlowTopTransparency
+            )
+            print(
+                "GlowBottomTransparency:",
+                State.GlowBottomTransparency
+            )
+            print(
+                "ChamsFillTransparency:",
+                State.ChamsFillTransparency
+            )
             print("================================")
 
         end,
