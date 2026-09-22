@@ -4,7 +4,8 @@ function UI.Init(Config)
 
     print("[UI] Inicializando " .. Config.ProjectName)
 
-    local UserInputService = game:GetService("UserInputService")
+    local UserInputService =
+        game:GetService("UserInputService")
 
     local function LoadModule(path)
 
@@ -150,7 +151,8 @@ function UI.Init(Config)
 
             if Input.KeyCode == Enum.KeyCode.LeftShift then
 
-                State.Visible = not State.Visible
+                State.Visible =
+                    not State.Visible
 
                 Rayfield:SetVisibility(
                     State.Visible
@@ -211,6 +213,16 @@ function UI.Init(Config)
     print("[UI] FarmService carregado.")
 
     -- ========================================================
+    -- COMBAT SERVICE
+    -- ========================================================
+
+    local CombatService = LoadModule(
+        "src/combat/service.lua"
+    )
+
+    print("[UI] CombatService carregado.")
+
+    -- ========================================================
     -- SERVICES REGISTRY
     -- ========================================================
 
@@ -234,6 +246,13 @@ function UI.Init(Config)
     )
 
     print("[UI] FarmService registrado.")
+
+    Services.Register(
+        "Combat",
+        CombatService
+    )
+
+    print("[UI] CombatService registrado.")
 
     -- ========================================================
     -- ENTITY MANAGER
@@ -262,6 +281,18 @@ function UI.Init(Config)
 
     print(
         "[UI] FarmService inicializado."
+    )
+
+    -- ========================================================
+    -- COMBAT SERVICE
+    -- ========================================================
+
+    CombatService.Init(
+        State
+    )
+
+    print(
+        "[UI] CombatService inicializado."
     )
 
     -- ========================================================
@@ -371,10 +402,14 @@ function UI.Init(Config)
     -- ========================================================
 
     State.Pages = Pages
+
     State.Mobs = Mobs
     State.Boss = Boss
     State.Quests = Quests
+
     State.FarmService = FarmService
+    State.CombatService = CombatService
+
     State.Scanner = Scanner
     State.Entities = Entities
 
@@ -383,6 +418,8 @@ function UI.Init(Config)
     print("[UI] Services central conectado.")
     print("[UI] Entity Manager conectado.")
     print("[UI] Scanner conectado.")
+    print("[UI] FarmService conectado.")
+    print("[UI] CombatService conectado.")
     print("[UI] Todas as Pages carregadas.")
 
     return State
