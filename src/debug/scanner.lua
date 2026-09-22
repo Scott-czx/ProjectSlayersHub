@@ -20,6 +20,19 @@ local KnownQuestNames = {
 }
 
 -- ========================================================
+-- STATE
+-- ========================================================
+
+local Results = {
+    Models = {},
+    Humanoids = {},
+    QuestNPCs = {},
+    Prompts = {},
+    SearchResults = {},
+    LastScan = 0,
+}
+
+-- ========================================================
 -- HELPERS
 -- ========================================================
 
@@ -68,247 +81,311 @@ local function GetFullName(object)
     return tostring(object)
 end
 
--- ========================================================
--- INSTANCE INFO
--- ========================================================
-
-local function PrintBasicInfo(object)
-
-    print(
-        "[Scanner]",
-        GetFullName(object),
-        "| Class:",
-        GetClassName(object)
-    )
-
-end
-
--- ========================================================
--- ATTRIBUTES
--- ========================================================
-
-local function ScanAttributes(object)
+local function GetAttributes(object)
 
     local success, attributes = pcall(function()
         return object:GetAttributes()
     end)
 
-    if not success then
-        return
+    if success then
+        return attributes
     end
 
-    for name, value in pairs(attributes) do
+    return {}
+end
 
-        print(
-            "    [Attribute]",
-            tostring(name),
-            "=",
-            tostring(value)
-        )
+local function GetHumanoidInfo(model)
 
+    if not model:IsA("Model") then
+        return nil
     end
+
+    local success, humanoid = pcall(function()
+        return model:FindFirstChildOfClass("Humanoid")
+    end)
+
+    if not success or humanoid == nil then
+        return nil
+    end
+
+    return {
+        Instance = model,
+        Humanoid = humanoid,
+        Name = model.Name,
+        FullName = GetFullName(model),
+        Health = humanoid.Health,
+        MaxHealth = humanoid.MaxHealth,
+    }
+end
+
+-- ========================================================
+-- RESET
+-- ========================================================
+
+function Scanner.Clear()
+
+    Results = {
+        Models = {},
+        Humanoids = {},
+        QuestNPCs = {},
+        Prompts = {},
+        SearchResults = {},
+        LastScan = 0,
+    }
+
+    print("[Scanner] Resultados limpos.")
 
 end
 
 -- ========================================================
--- CHILDREN
+-- SCAN MODELS
 -- ========================================================
 
-local function ScanChildren(object, depth)
+function Scanner.ScanModels()
 
-    if depth > MAX_DEPTH then
-        return
-    end
+    local models = {}
 
-    local success, children = pcall(function()
-        return object:GetChildren()
+    local success, descendants = pcall(function()
+        return workspace:GetDescendants()
     end)
 
     if not success then
-        return
-    end
-
-    for _, child in ipairs(children) do
-
-        local prefix = string.rep(
-            "    ",
-            depth
+        warn(
+            "[Scanner] Falha ao obter descendants:",
+            descendants
         )
 
-        print(
-            prefix
-            .. "[Child] "
-            .. child.Name
-            .. " | "
-            .. GetClassName(child)
-        )
-
-        ScanAttributes(child)
-
-        ScanChildren(
-            child,
-            depth + 1
-        )
-
+        return models
     end
 
-end
+    for _, object in ipairs(descendants) do
 
--- ========================================================
--- HUMANOID
--- ========================================================
+        if object:IsA("Model") then
 
-local function ScanHumanoid(model)
-
-    if not model:IsA("Model") then
-        return
-    end
-
-    local humanoid = model:FindFirstChildOfClass(
-        "Humanoid"
-    )
-
-    if humanoid == nil then
-        return
-    end
-
-    print(
-        "    [Humanoid]",
-        "Health=" .. tostring(humanoid.Health),
-        "MaxHealth=" .. tostring(humanoid.MaxHealth)
-    )
-
-end
-
--- ========================================================
--- PROMPTS
--- ========================================================
-
-local function ScanPrompts(object)
-
-    local descendants = object:GetDescendants()
-
-    for _, descendant in ipairs(descendants) do
-
-        if descendant:IsA("ProximityPrompt") then
-
-            print(
-                "    [ProximityPrompt]",
-                descendant:GetFullName()
-            )
-
-            print(
-                "        ActionText:",
-                descendant.ActionText
-            )
-
-            print(
-                "        ObjectText:",
-                descendant.ObjectText
-            )
-
-            print(
-                "        Enabled:",
-                descendant.Enabled
-            )
+            table.insert(models, {
+                Instance = object,
+                Name = object.Name,
+                FullName = GetFullName(object),
+                ClassName = GetClassName(object),
+                Attributes = GetAttributes(object),
+            })
 
         end
 
     end
 
+    Results.Models = models
+
+    print(
+        "[Scanner] Models encontrados:",
+        #models
+    )
+
+    return models
+
 end
 
 -- ========================================================
--- QUEST NPC SCAN
+-- SCAN HUMANOIDS
 -- ========================================================
 
-function Scanner.ScanQuestNPCs()
+function Scanner.ScanHumanoids()
 
-    print("================================")
-    print("[Scanner] PROJECT SLAYERS 2")
-    print("[Scanner] QUEST NPC SCAN")
-    print("================================")
+    local humanoids = {}
 
-    local found = 0
+    local success, descendants = pcall(function()
+        return workspace:GetDescendants()
+    end)
 
-    for _, object in ipairs(workspace:GetDescendants()) do
+    if not success then
+        warn(
+            "[Scanner] Falha ao obter descendants:",
+            descendants
+        )
+
+        return humanoids
+    end
+
+    for _, object in ipairs(descendants) do
 
         if object:IsA("Model") then
 
-            if IsKnownName(object.Name) then
+            local info = GetHumanoidInfo(object)
 
-                found = found + 1
-
-                print("")
-                print("--------------------------------")
-                print("[Quest NPC #" .. found .. "]")
-                print("--------------------------------")
-
-                PrintBasicInfo(object)
-
-                ScanAttributes(object)
-
-                ScanHumanoid(object)
-
-                ScanPrompts(object)
-
-                ScanChildren(
-                    object,
-                    1
+            if info ~= nil then
+                table.insert(
+                    humanoids,
+                    info
                 )
-
             end
 
         end
 
     end
 
-    print("")
-    print("================================")
-    print(
-        "[Scanner] NPCs encontrados:",
-        found
-    )
-    print("================================")
+    Results.Humanoids = humanoids
 
-    return found
+    print(
+        "[Scanner] Models com Humanoid:",
+        #humanoids
+    )
+
+    return humanoids
+
 end
 
 -- ========================================================
--- ALL MODELS
+-- SCAN QUEST NPCS
 -- ========================================================
 
-function Scanner.ScanModels()
+function Scanner.ScanQuestNPCs()
 
-    print("================================")
-    print("[Scanner] TODOS OS MODELS")
-    print("================================")
+    local questNPCs = {}
 
-    local count = 0
+    local success, descendants = pcall(function()
+        return workspace:GetDescendants()
+    end)
 
-    for _, object in ipairs(workspace:GetDescendants()) do
+    if not success then
+        warn(
+            "[Scanner] Falha ao obter descendants:",
+            descendants
+        )
 
-        if object:IsA("Model") then
+        return questNPCs
+    end
 
-            count = count + 1
+    for _, object in ipairs(descendants) do
 
-            print(
-                "[Model]",
-                object:GetFullName()
+        if object:IsA("Model") and IsKnownName(object.Name) then
+
+            local humanoidInfo = GetHumanoidInfo(object)
+
+            local entry = {
+                Instance = object,
+                Name = object.Name,
+                FullName = GetFullName(object),
+                ClassName = GetClassName(object),
+                Attributes = GetAttributes(object),
+                Humanoid = humanoidInfo,
+            }
+
+            table.insert(
+                questNPCs,
+                entry
             )
 
         end
 
     end
 
+    Results.QuestNPCs = questNPCs
+
     print(
-        "[Scanner] Total de Models:",
-        count
+        "[Scanner] Quest NPCs encontrados:",
+        #questNPCs
+    )
+
+    return questNPCs
+
+end
+
+-- ========================================================
+-- SCAN PROMPTS
+-- ========================================================
+
+function Scanner.ScanPrompts()
+
+    local prompts = {}
+
+    local success, descendants = pcall(function()
+        return workspace:GetDescendants()
+    end)
+
+    if not success then
+        warn(
+            "[Scanner] Falha ao obter descendants:",
+            descendants
+        )
+
+        return prompts
+    end
+
+    for _, object in ipairs(descendants) do
+
+        if object:IsA("ProximityPrompt") then
+
+            table.insert(
+                prompts,
+                {
+                    Instance = object,
+                    Name = object.Name,
+                    FullName = GetFullName(object),
+                    ActionText = object.ActionText,
+                    ObjectText = object.ObjectText,
+                    Enabled = object.Enabled,
+                }
+            )
+
+        end
+
+    end
+
+    Results.Prompts = prompts
+
+    print(
+        "[Scanner] ProximityPrompts encontrados:",
+        #prompts
+    )
+
+    return prompts
+
+end
+
+-- ========================================================
+-- FULL SCAN
+-- ========================================================
+
+function Scanner.Scan()
+
+    print("================================")
+    print("[Scanner] FULL SCAN")
+    print("================================")
+
+    Scanner.Clear()
+
+    Scanner.ScanModels()
+    Scanner.ScanHumanoids()
+    Scanner.ScanQuestNPCs()
+    Scanner.ScanPrompts()
+
+    Results.LastScan = os.clock()
+
+    print("--------------------------------")
+    print(
+        "[Scanner] Models:",
+        #Results.Models
+    )
+
+    print(
+        "[Scanner] Humanoids:",
+        #Results.Humanoids
+    )
+
+    print(
+        "[Scanner] Quest NPCs:",
+        #Results.QuestNPCs
+    )
+
+    print(
+        "[Scanner] Prompts:",
+        #Results.Prompts
     )
 
     print("================================")
 
-    return count
+    return Results
+
 end
 
 -- ========================================================
@@ -318,21 +395,27 @@ end
 function Scanner.Search(text)
 
     if type(text) ~= "string" then
-        return 0
+        return {}
     end
 
     local wanted = string.lower(text)
 
-    local found = 0
+    local found = {}
 
-    print("================================")
-    print(
-        "[Scanner] SEARCH:",
-        text
-    )
-    print("================================")
+    local success, descendants = pcall(function()
+        return workspace:GetDescendants()
+    end)
 
-    for _, object in ipairs(workspace:GetDescendants()) do
+    if not success then
+        warn(
+            "[Scanner] Falha ao pesquisar:",
+            descendants
+        )
+
+        return found
+    end
+
+    for _, object in ipairs(descendants) do
 
         local objectName = string.lower(
             object.Name
@@ -345,27 +428,89 @@ function Scanner.Search(text)
             true
         ) then
 
-            found = found + 1
-
-            print(
-                "[" .. found .. "]",
-                object:GetFullName(),
-                "|",
-                object.ClassName
+            table.insert(
+                found,
+                {
+                    Instance = object,
+                    Name = object.Name,
+                    FullName = GetFullName(object),
+                    ClassName = GetClassName(object),
+                }
             )
 
         end
 
     end
 
+    Results.SearchResults = found
+
+    print("================================")
+    print(
+        "[Scanner] SEARCH:",
+        text
+    )
     print("================================")
 
+    for index, result in ipairs(found) do
+
+        print(
+            "[" .. index .. "]",
+            result.FullName,
+            "|",
+            result.ClassName
+        )
+
+    end
+
+    print("--------------------------------")
     print(
         "[Scanner] Encontrados:",
-        found
+        #found
     )
+    print("================================")
 
     return found
+
+end
+
+-- ========================================================
+-- GETTERS
+-- ========================================================
+
+function Scanner.GetResults()
+
+    return Results
+
+end
+
+function Scanner.GetModels()
+
+    return Results.Models
+
+end
+
+function Scanner.GetHumanoids()
+
+    return Results.Humanoids
+
+end
+
+function Scanner.GetQuestNPCs()
+
+    return Results.QuestNPCs
+
+end
+
+function Scanner.GetPrompts()
+
+    return Results.Prompts
+
+end
+
+function Scanner.GetSearchResults()
+
+    return Results.SearchResults
+
 end
 
 -- ========================================================
@@ -393,7 +538,47 @@ function Scanner.Debug()
         MAX_DEPTH
     )
 
+    print(
+        "Models:",
+        #Results.Models
+    )
+
+    print(
+        "Humanoids:",
+        #Results.Humanoids
+    )
+
+    print(
+        "Quest NPCs:",
+        #Results.QuestNPCs
+    )
+
+    print(
+        "Prompts:",
+        #Results.Prompts
+    )
+
+    print(
+        "Search Results:",
+        #Results.SearchResults
+    )
+
+    print(
+        "Last Scan:",
+        Results.LastScan
+    )
+
     print("================================")
+
+end
+
+-- ========================================================
+-- MODULE INFO
+-- ========================================================
+
+function Scanner.GetKnownQuestNames()
+
+    return KnownQuestNames
 
 end
 
