@@ -4,16 +4,31 @@ function FarmUI.Init(Tab, State)
 
     print("[UI] Farm inicializado.")
 
-    -- =========================
+    -- ========================================================
+    -- TESTE
+    -- ========================================================
+
+    Tab:CreateParagraph({
+        name = "Farm",
+        content = "Project Slayers 2 - Farm"
+    })
+
+    Tab:CreateButton({
+        name = "Farm UI Test",
+        callback = function()
+            print("[Farm] UI funcionando corretamente.")
+        end,
+    })
+
+    -- ========================================================
     -- FARM MOBS
-    -- =========================
+    -- ========================================================
 
     Tab:CreateParagraph({
         name = "Farm Mobs",
         content = "Configurações para farm automático de mobs."
     })
 
-    -- Mob selecionado
     local TargetMob = Tab:CreateDropdown({
         name = "Target Mob",
         options = {
@@ -23,66 +38,80 @@ function FarmUI.Init(Tab, State)
             "Nenhum mob encontrado"
         },
         callback = function(option)
-            State.TargetMob = option
 
-            print("[Farm] Target Mob:", option)
+            if type(option) == "table" then
+                State.TargetMob = option[1]
+            else
+                State.TargetMob = option
+            end
+
+            print(
+                "[Farm] Target Mob:",
+                State.TargetMob
+            )
         end,
     })
 
-    -- Atualizar lista de mobs
+    State.TargetMobElement = TargetMob
+
     Tab:CreateButton({
         name = "Refresh Mobs",
-
         callback = function()
-            print("[Farm] Atualizando lista de mobs...")
+
+            print(
+                "[Farm] Atualizando lista de mobs..."
+            )
 
             -- Futuramente:
-            -- detectar os mobs existentes no mapa
+            -- detectar os mobs existentes
             -- e atualizar o dropdown
+
         end,
     })
 
-    -- Farm automático
     Tab:CreateToggle({
         name = "Farm Mobs",
         currentValue = false,
 
         callback = function(value)
+
             State.FarmMobs = value
 
             print(
                 "[Farm] Farm Mobs:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- Kill Aura
     Tab:CreateToggle({
-        name = "Kill Aura",
+        name = "Mob Kill Aura",
         currentValue = false,
 
         callback = function(value)
+
             State.MobKillAura = value
 
             print(
                 "[Farm] Mob Kill Aura:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- =========================
-    -- POSIÇÃO DO FARM
-    -- =========================
+    -- ========================================================
+    -- FARM MOBS POSITION
+    -- ========================================================
 
     Tab:CreateParagraph({
-        name = "Farm Position",
+        name = "Mob Farm Position",
         content = "Define a posição relativa ao mob."
     })
 
     Tab:CreateSlider({
-        name = "X Offset",
+        name = "Mob X Offset",
         range = {-50, 50},
         increment = 1,
         currentValue = 0,
@@ -93,7 +122,7 @@ function FarmUI.Init(Tab, State)
     })
 
     Tab:CreateSlider({
-        name = "Y Offset",
+        name = "Mob Y Offset",
         range = {-50, 50},
         increment = 1,
         currentValue = 5,
@@ -104,7 +133,7 @@ function FarmUI.Init(Tab, State)
     })
 
     Tab:CreateSlider({
-        name = "Z Offset",
+        name = "Mob Z Offset",
         range = {-50, 50},
         increment = 1,
         currentValue = 5,
@@ -115,7 +144,7 @@ function FarmUI.Init(Tab, State)
     })
 
     Tab:CreateSlider({
-        name = "Distance",
+        name = "Mob Distance",
         range = {1, 50},
         increment = 1,
         currentValue = 10,
@@ -125,9 +154,9 @@ function FarmUI.Init(Tab, State)
         end,
     })
 
-    -- =========================
+    -- ========================================================
     -- LOOT
-    -- =========================
+    -- ========================================================
 
     Tab:CreateParagraph({
         name = "Loot",
@@ -139,12 +168,14 @@ function FarmUI.Init(Tab, State)
         currentValue = false,
 
         callback = function(value)
+
             State.AutoLootChests = value
 
             print(
                 "[Farm] Auto Loot Chests:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
@@ -153,25 +184,26 @@ function FarmUI.Init(Tab, State)
         currentValue = false,
 
         callback = function(value)
+
             State.PickupAura = value
 
             print(
                 "[Farm] Pickup Aura:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- =========================
+    -- ========================================================
     -- BOSS
-    -- =========================
+    -- ========================================================
 
     Tab:CreateParagraph({
-        name = "Boss",
+        name = "Boss Farm",
         content = "Configurações para farm automático de bosses."
     })
 
-    -- Boss selecionado
     local TargetBoss = Tab:CreateDropdown({
         name = "Target Boss",
 
@@ -184,52 +216,62 @@ function FarmUI.Init(Tab, State)
         },
 
         callback = function(option)
-            State.TargetBoss = option
 
-            print("[Farm] Target Boss:", option)
+            if type(option) == "table" then
+                State.TargetBoss = option[1]
+            else
+                State.TargetBoss = option
+            end
+
+            print(
+                "[Farm] Target Boss:",
+                State.TargetBoss
+            )
+
         end,
     })
 
-    -- Atualizar lista de bosses
+    State.TargetBossElement = TargetBoss
+
     Tab:CreateButton({
         name = "Refresh Bosses",
 
         callback = function()
-            print("[Farm] Atualizando lista de bosses...")
 
-            -- Futuramente:
-            -- procurar bosses existentes no jogo
-            -- atualizar TargetBoss
+            print(
+                "[Farm] Atualizando lista de bosses..."
+            )
+
         end,
     })
 
-    -- Farm automático de boss
     Tab:CreateToggle({
         name = "Boss Farm",
         currentValue = false,
 
         callback = function(value)
+
             State.BossFarm = value
 
             print(
                 "[Farm] Boss Farm:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- =========================
+    -- ========================================================
     -- AUTO QUEST
-    -- =========================
+    -- ========================================================
 
     Tab:CreateParagraph({
         name = "Auto Quest",
-        content = "Configurações para gerenciamento automático de quests."
+        content = "Configurações para gerenciamento de quests."
     })
 
-    -- Quest selecionada
     local TargetQuest = Tab:CreateDropdown({
-        name = "Quest",
+        name = "Target Quest",
 
         options = {
             "Nenhuma quest encontrada"
@@ -240,51 +282,60 @@ function FarmUI.Init(Tab, State)
         },
 
         callback = function(option)
-            State.TargetQuest = option
 
-            print("[Farm] Quest selecionada:", option)
+            if type(option) == "table" then
+                State.TargetQuest = option[1]
+            else
+                State.TargetQuest = option
+            end
+
+            print(
+                "[Farm] Quest selecionada:",
+                State.TargetQuest
+            )
+
         end,
     })
 
-    -- Atualizar quests
+    State.TargetQuestElement = TargetQuest
+
     Tab:CreateButton({
         name = "Refresh Quests",
 
         callback = function()
-            print("[Farm] Atualizando lista de quests...")
 
-            -- Futuramente:
-            -- localizar quests disponíveis
-            -- montar a lista
-            -- atualizar TargetQuest
+            print(
+                "[Farm] Atualizando lista de quests..."
+            )
+
         end,
     })
 
-    -- Auto Quest
     Tab:CreateToggle({
         name = "Auto Quest",
         currentValue = false,
 
         callback = function(value)
+
             State.AutoQuest = value
 
             print(
                 "[Farm] Auto Quest:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- =========================
+    -- ========================================================
     -- FARM PLAYERS
-    -- =========================
+    -- ========================================================
 
     Tab:CreateParagraph({
         name = "Farm Players",
         content = "Configurações para interação com jogadores."
     })
 
-    -- Jogador selecionado
     local TargetPlayer = Tab:CreateDropdown({
         name = "Target Player",
 
@@ -297,66 +348,78 @@ function FarmUI.Init(Tab, State)
         },
 
         callback = function(option)
-            State.TargetPlayer = option
 
-            print("[Farm] Target Player:", option)
+            if type(option) == "table" then
+                State.TargetPlayer = option[1]
+            else
+                State.TargetPlayer = option
+            end
+
+            print(
+                "[Farm] Target Player:",
+                State.TargetPlayer
+            )
+
         end,
     })
 
-    -- Atualizar jogadores
+    State.TargetPlayerElement = TargetPlayer
+
     Tab:CreateButton({
         name = "Refresh Players",
 
         callback = function()
-            print("[Farm] Atualizando lista de jogadores...")
 
-            -- Futuramente:
-            -- pegar os jogadores atuais
-            -- atualizar o dropdown
+            print(
+                "[Farm] Atualizando lista de jogadores..."
+            )
+
         end,
     })
 
-    -- Farm Player
     Tab:CreateToggle({
         name = "Farm Player",
         currentValue = false,
 
         callback = function(value)
+
             State.FarmPlayer = value
 
             print(
                 "[Farm] Farm Player:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- Kill Aura
     Tab:CreateToggle({
-        name = "Kill Aura",
+        name = "Player Kill Aura",
         currentValue = false,
 
         callback = function(value)
+
             State.PlayerKillAura = value
 
             print(
                 "[Farm] Player Kill Aura:",
                 value and "ON" or "OFF"
             )
+
         end,
     })
 
-    -- =========================
+    -- ========================================================
     -- PLAYER FARM POSITION
-    -- =========================
+    -- ========================================================
 
     Tab:CreateParagraph({
-        name = "Farm Position",
+        name = "Player Farm Position",
         content = "Define a posição relativa ao jogador alvo."
     })
 
     Tab:CreateSlider({
-        name = "X Offset",
+        name = "Player X Offset",
         range = {-50, 50},
         increment = 1,
         currentValue = 0,
@@ -367,7 +430,7 @@ function FarmUI.Init(Tab, State)
     })
 
     Tab:CreateSlider({
-        name = "Y Offset",
+        name = "Player Y Offset",
         range = {-50, 50},
         increment = 1,
         currentValue = 5,
@@ -378,7 +441,7 @@ function FarmUI.Init(Tab, State)
     })
 
     Tab:CreateSlider({
-        name = "Z Offset",
+        name = "Player Z Offset",
         range = {-50, 50},
         increment = 1,
         currentValue = 5,
@@ -389,7 +452,7 @@ function FarmUI.Init(Tab, State)
     })
 
     Tab:CreateSlider({
-        name = "Distance",
+        name = "Player Distance",
         range = {1, 50},
         increment = 1,
         currentValue = 10,
@@ -398,6 +461,35 @@ function FarmUI.Init(Tab, State)
             State.PlayerFarmDistance = value
         end,
     })
+
+    -- ========================================================
+    -- DEBUG
+    -- ========================================================
+
+    Tab:CreateParagraph({
+        name = "Debug",
+        content = "Ferramentas de diagnóstico do Project Slayers 2."
+    })
+
+    Tab:CreateButton({
+        name = "Farm Debug Test",
+
+        callback = function()
+
+            print("================================")
+            print("[Farm] DEBUG")
+            print("================================")
+            print("State:", State ~= nil)
+            print("TargetMob:", State.TargetMob)
+            print("TargetBoss:", State.TargetBoss)
+            print("TargetQuest:", State.TargetQuest)
+            print("TargetPlayer:", State.TargetPlayer)
+            print("================================")
+
+        end,
+    })
+
+    print("[UI] Farm finalizado.")
 
 end
 
