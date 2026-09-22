@@ -1,496 +1,553 @@
 local FarmUI = {}
 
+local function NormalizeDropdownValue(option)
+    if type(option) == "table" then
+        return option[1]
+    end
+
+    return option
+end
+
 function FarmUI.Init(Tab, State)
 
-    print("[UI] Farm inicializado.")
+    if Tab == nil then
+        error("[FarmUI] Tab inválida.")
+    end
 
-    -- ========================================================
-    -- TESTE
-    -- ========================================================
+    if type(State) ~= "table" then
+        error("[FarmUI] State inválido.")
+    end
 
-    Tab:CreateParagraph({
-        name = "Farm",
-        content = "Project Slayers 2 - Farm"
+    print("[FarmUI] Inicializando...")
+
+    ----------------------------------------------------------------
+    -- HEADER
+    ----------------------------------------------------------------
+
+    Tab:CreateText({
+        name = "Project Slayers 2 - Farm",
+        text = "Sistema de Farm. Nesta etapa estamos configurando apenas a interface e o gerenciamento de estado.",
     })
 
     Tab:CreateButton({
         name = "Farm UI Test",
+        description = "Verifica se os elementos da aba Farm estão funcionando.",
         callback = function()
+            print("================================")
             print("[Farm] UI funcionando corretamente.")
+            print("================================")
         end,
     })
 
-    -- ========================================================
-    -- FARM MOBS
-    -- ========================================================
+    ----------------------------------------------------------------
+    -- MOBS
+    ----------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Farm Mobs",
-        content = "Configurações para farm automático de mobs."
+        text = "Configurações relacionadas a mobs.",
     })
 
-    local TargetMob = Tab:CreateDropdown({
+    local TargetMobElement = Tab:CreateDropdown({
         name = "Target Mob",
+        description = "Escolha o mob que será armazenado como alvo.",
         options = {
-            "Nenhum mob encontrado"
+            "Nenhum",
+            "Bandit",
+            "Demon",
+            "Spider",
+            "Custom",
         },
-        currentOption = {
-            "Nenhum mob encontrado"
-        },
+        value = "Nenhum",
         callback = function(option)
+            local value = NormalizeDropdownValue(option)
 
-            if type(option) == "table" then
-                State.TargetMob = option[1]
+            if value == "Nenhum" then
+                State.TargetMob = nil
             else
-                State.TargetMob = option
+                State.TargetMob = value
             end
 
-            print(
-                "[Farm] Target Mob:",
-                State.TargetMob
-            )
+            print("[FarmUI] TargetMob:", State.TargetMob)
         end,
     })
 
-    State.TargetMobElement = TargetMob
+    State.TargetMobElement = TargetMobElement
 
     Tab:CreateButton({
         name = "Refresh Mobs",
+        description = "Atualiza a lista de mobs quando o sistema de descoberta estiver conectado.",
         callback = function()
+            print("[FarmUI] Refresh Mobs solicitado.")
 
-            print(
-                "[Farm] Atualizando lista de mobs..."
-            )
+            if State.FarmService then
+                local success, result = pcall(function()
+                    return State.FarmService.GetMobCandidates()
+                end)
 
-            -- Futuramente:
-            -- detectar os mobs existentes
-            -- e atualizar o dropdown
-
+                if success then
+                    print(
+                        "[FarmUI] Mobs encontrados:",
+                        #result
+                    )
+                else
+                    warn(
+                        "[FarmUI] Falha ao procurar mobs:",
+                        result
+                    )
+                end
+            end
         end,
     })
 
     Tab:CreateToggle({
         name = "Farm Mobs",
-        currentValue = false,
-
+        description = "Liga/desliga o estado de Farm Mobs.",
+        value = false,
         callback = function(value)
-
             State.FarmMobs = value
 
             print(
-                "[Farm] Farm Mobs:",
-                value and "ON" or "OFF"
+                "[FarmUI] FarmMobs:",
+                value
             )
-
         end,
     })
 
     Tab:CreateToggle({
         name = "Mob Kill Aura",
-        currentValue = false,
-
+        description = "Liga/desliga o estado de Mob Kill Aura.",
+        value = false,
         callback = function(value)
-
             State.MobKillAura = value
 
             print(
-                "[Farm] Mob Kill Aura:",
-                value and "ON" or "OFF"
+                "[FarmUI] MobKillAura:",
+                value
             )
-
         end,
     })
 
-    -- ========================================================
-    -- FARM MOBS POSITION
-    -- ========================================================
+    Tab:CreateSlider({
+        name = "Mob Farm Distance",
+        description = "Distância armazenada para o posicionamento do farm.",
+        range = { 1, 50 },
+        increment = 1,
+        value = State.FarmDistance or 5,
+        suffix = " studs",
+        callback = function(value)
+            State.FarmDistance = value
 
-    Tab:CreateParagraph({
+            print(
+                "[FarmUI] FarmDistance:",
+                value
+            )
+        end,
+    })
+
+    ----------------------------------------------------------------
+    -- FARM POSITION
+    ----------------------------------------------------------------
+
+    Tab:CreateText({
         name = "Mob Farm Position",
-        content = "Define a posição relativa ao mob."
+        text = "Offsets utilizados posteriormente pelo sistema de posicionamento.",
     })
 
     Tab:CreateSlider({
-        name = "Mob X Offset",
-        range = {-50, 50},
+        name = "Mob Offset X",
+        range = { -50, 50 },
         increment = 1,
-        currentValue = 0,
-
+        value = State.FarmOffsetX or 0,
+        suffix = " X",
         callback = function(value)
             State.FarmOffsetX = value
         end,
     })
 
     Tab:CreateSlider({
-        name = "Mob Y Offset",
-        range = {-50, 50},
+        name = "Mob Offset Y",
+        range = { -50, 50 },
         increment = 1,
-        currentValue = 5,
-
+        value = State.FarmOffsetY or 0,
+        suffix = " Y",
         callback = function(value)
             State.FarmOffsetY = value
         end,
     })
 
     Tab:CreateSlider({
-        name = "Mob Z Offset",
-        range = {-50, 50},
+        name = "Mob Offset Z",
+        range = { -50, 50 },
         increment = 1,
-        currentValue = 5,
-
+        value = State.FarmOffsetZ or 0,
+        suffix = " Z",
         callback = function(value)
             State.FarmOffsetZ = value
         end,
     })
 
-    Tab:CreateSlider({
-        name = "Mob Distance",
-        range = {1, 50},
-        increment = 1,
-        currentValue = 10,
-
-        callback = function(value)
-            State.FarmDistance = value
-        end,
-    })
-
-    -- ========================================================
+    ----------------------------------------------------------------
     -- LOOT
-    -- ========================================================
+    ----------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Loot",
-        content = "Configurações de coleta."
+        text = "Configurações relacionadas à coleta.",
     })
 
     Tab:CreateToggle({
         name = "Auto Loot Chests",
-        currentValue = false,
-
+        description = "Liga/desliga o estado de Auto Loot Chests.",
+        value = false,
         callback = function(value)
-
             State.AutoLootChests = value
 
             print(
-                "[Farm] Auto Loot Chests:",
-                value and "ON" or "OFF"
+                "[FarmUI] AutoLootChests:",
+                value
             )
-
         end,
     })
 
     Tab:CreateToggle({
         name = "Pickup Aura",
-        currentValue = false,
-
+        description = "Liga/desliga o estado de Pickup Aura.",
+        value = false,
         callback = function(value)
-
             State.PickupAura = value
 
             print(
-                "[Farm] Pickup Aura:",
-                value and "ON" or "OFF"
+                "[FarmUI] PickupAura:",
+                value
             )
-
         end,
     })
 
-    -- ========================================================
+    ----------------------------------------------------------------
     -- BOSS
-    -- ========================================================
+    ----------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Boss Farm",
-        content = "Configurações para farm automático de bosses."
+        text = "Configurações relacionadas a bosses.",
     })
 
-    local TargetBoss = Tab:CreateDropdown({
+    local TargetBossElement = Tab:CreateDropdown({
         name = "Target Boss",
-
+        description = "Escolha o boss que será armazenado como alvo.",
         options = {
-            "Nenhum boss encontrado"
+            "Nenhum",
+            "Obanai",
+            "Zentaro",
+            "Sabito",
+            "Giyu",
+            "Daki",
+            "Gyutaro",
+            "Sanemi",
+            "Shinobu",
+            "Rengoku",
+            "Nezura",
         },
-
-        currentOption = {
-            "Nenhum boss encontrado"
-        },
-
+        value = "Nenhum",
         callback = function(option)
+            local value = NormalizeDropdownValue(option)
 
-            if type(option) == "table" then
-                State.TargetBoss = option[1]
+            if value == "Nenhum" then
+                State.TargetBoss = nil
             else
-                State.TargetBoss = option
+                State.TargetBoss = value
             end
 
             print(
-                "[Farm] Target Boss:",
+                "[FarmUI] TargetBoss:",
                 State.TargetBoss
             )
-
         end,
     })
 
-    State.TargetBossElement = TargetBoss
-
-    Tab:CreateButton({
-        name = "Refresh Bosses",
-
-        callback = function()
-
-            print(
-                "[Farm] Atualizando lista de bosses..."
-            )
-
-        end,
-    })
+    State.TargetBossElement = TargetBossElement
 
     Tab:CreateToggle({
         name = "Boss Farm",
-        currentValue = false,
-
+        description = "Liga/desliga o estado de Boss Farm.",
+        value = false,
         callback = function(value)
-
             State.BossFarm = value
 
             print(
-                "[Farm] Boss Farm:",
-                value and "ON" or "OFF"
+                "[FarmUI] BossFarm:",
+                value
             )
-
         end,
     })
 
-    -- ========================================================
-    -- AUTO QUEST
-    -- ========================================================
+    Tab:CreateButton({
+        name = "Refresh Bosses",
+        description = "Procura entidades disponíveis através do FarmService.",
+        callback = function()
+            print("[FarmUI] Refresh Bosses solicitado.")
 
-    Tab:CreateParagraph({
-        name = "Auto Quest",
-        content = "Configurações para gerenciamento de quests."
+            if State.FarmService then
+                local success, result = pcall(function()
+                    return State.FarmService.GetBossCandidates()
+                end)
+
+                if success then
+                    print(
+                        "[FarmUI] Boss candidates:",
+                        #result
+                    )
+                else
+                    warn(
+                        "[FarmUI] Falha ao procurar bosses:",
+                        result
+                    )
+                end
+            end
+        end,
     })
 
-    local TargetQuest = Tab:CreateDropdown({
-        name = "Target Quest",
+    ----------------------------------------------------------------
+    -- QUEST
+    ----------------------------------------------------------------
 
+    Tab:CreateText({
+        name = "Auto Quest",
+        text = "Configurações relacionadas às quests.",
+    })
+
+    local TargetQuestElement = Tab:CreateDropdown({
+        name = "Target Quest NPC",
+        description = "Escolha um NPC conhecido de quest.",
         options = {
-            "Nenhuma quest encontrada"
+            "Nenhum",
+            "Krue",
+            "Tom",
+            "Chaka",
+            "Wagwan",
+            "Jugg",
+            "Goro",
+            "Tomoi",
+            "Mitsu",
+            "Kasugai Crow",
+            "Kona",
         },
-
-        currentOption = {
-            "Nenhuma quest encontrada"
-        },
-
+        value = "Nenhum",
         callback = function(option)
+            local value = NormalizeDropdownValue(option)
 
-            if type(option) == "table" then
-                State.TargetQuest = option[1]
+            if value == "Nenhum" then
+                State.TargetQuest = nil
             else
-                State.TargetQuest = option
+                State.TargetQuest = value
             end
 
             print(
-                "[Farm] Quest selecionada:",
+                "[FarmUI] TargetQuest:",
                 State.TargetQuest
             )
-
         end,
     })
 
-    State.TargetQuestElement = TargetQuest
-
-    Tab:CreateButton({
-        name = "Refresh Quests",
-
-        callback = function()
-
-            print(
-                "[Farm] Atualizando lista de quests..."
-            )
-
-        end,
-    })
+    State.TargetQuestElement = TargetQuestElement
 
     Tab:CreateToggle({
         name = "Auto Quest",
-        currentValue = false,
-
+        description = "Liga/desliga o estado de Auto Quest.",
+        value = false,
         callback = function(value)
-
             State.AutoQuest = value
 
             print(
-                "[Farm] Auto Quest:",
-                value and "ON" or "OFF"
+                "[FarmUI] AutoQuest:",
+                value
             )
-
         end,
     })
 
-    -- ========================================================
-    -- FARM PLAYERS
-    -- ========================================================
+    Tab:CreateButton({
+        name = "Refresh Quest NPCs",
+        description = "Procura os NPCs conhecidos no Workspace.",
+        callback = function()
+            print("[FarmUI] Refresh Quest NPCs solicitado.")
 
-    Tab:CreateParagraph({
-        name = "Farm Players",
-        content = "Configurações para interação com jogadores."
+            if State.FarmService then
+                local success, result = pcall(function()
+                    return State.FarmService.GetQuestCandidates()
+                end)
+
+                if success then
+                    print(
+                        "[FarmUI] Quest NPCs encontrados:",
+                        #result
+                    )
+                else
+                    warn(
+                        "[FarmUI] Falha ao procurar Quest NPCs:",
+                        result
+                    )
+                end
+            end
+        end,
     })
 
-    local TargetPlayer = Tab:CreateDropdown({
+    ----------------------------------------------------------------
+    -- PLAYERS
+    ----------------------------------------------------------------
+
+    Tab:CreateText({
+        name = "Farm Players",
+        text = "Interface preparada para seleção e configuração de jogadores.",
+    })
+
+    local TargetPlayerElement = Tab:CreateDropdown({
         name = "Target Player",
-
+        description = "Lista temporária para configuração da interface.",
         options = {
-            "Nenhum jogador encontrado"
+            "Nenhum",
         },
-
-        currentOption = {
-            "Nenhum jogador encontrado"
-        },
-
+        value = "Nenhum",
         callback = function(option)
+            local value = NormalizeDropdownValue(option)
 
-            if type(option) == "table" then
-                State.TargetPlayer = option[1]
+            if value == "Nenhum" then
+                State.TargetPlayer = nil
             else
-                State.TargetPlayer = option
+                State.TargetPlayer = value
             end
 
             print(
-                "[Farm] Target Player:",
+                "[FarmUI] TargetPlayer:",
                 State.TargetPlayer
             )
-
         end,
     })
 
-    State.TargetPlayerElement = TargetPlayer
+    State.TargetPlayerElement = TargetPlayerElement
 
     Tab:CreateButton({
         name = "Refresh Players",
-
+        description = "Atualiza a lista de jogadores futuramente.",
         callback = function()
-
-            print(
-                "[Farm] Atualizando lista de jogadores..."
-            )
-
+            print("[FarmUI] Refresh Players solicitado.")
         end,
     })
 
     Tab:CreateToggle({
         name = "Farm Player",
-        currentValue = false,
-
+        description = "Estado da configuração de Farm Player.",
+        value = false,
         callback = function(value)
-
             State.FarmPlayer = value
 
             print(
-                "[Farm] Farm Player:",
-                value and "ON" or "OFF"
+                "[FarmUI] FarmPlayer:",
+                value
             )
-
         end,
     })
 
     Tab:CreateToggle({
         name = "Player Kill Aura",
-        currentValue = false,
-
+        description = "Estado da configuração de Player Kill Aura.",
+        value = false,
         callback = function(value)
-
             State.PlayerKillAura = value
 
             print(
-                "[Farm] Player Kill Aura:",
-                value and "ON" or "OFF"
+                "[FarmUI] PlayerKillAura:",
+                value
             )
-
         end,
     })
 
-    -- ========================================================
-    -- PLAYER FARM POSITION
-    -- ========================================================
+    Tab:CreateSlider({
+        name = "Player Farm Distance",
+        range = { 1, 50 },
+        increment = 1,
+        value = State.PlayerFarmDistance or 5,
+        suffix = " studs",
+        callback = function(value)
+            State.PlayerFarmDistance = value
+        end,
+    })
 
-    Tab:CreateParagraph({
+    ----------------------------------------------------------------
+    -- PLAYER FARM POSITION
+    ----------------------------------------------------------------
+
+    Tab:CreateText({
         name = "Player Farm Position",
-        content = "Define a posição relativa ao jogador alvo."
+        text = "Offsets da configuração de posicionamento.",
     })
 
     Tab:CreateSlider({
-        name = "Player X Offset",
-        range = {-50, 50},
+        name = "Player Offset X",
+        range = { -50, 50 },
         increment = 1,
-        currentValue = 0,
-
+        value = State.PlayerFarmOffsetX or 0,
+        suffix = " X",
         callback = function(value)
             State.PlayerFarmOffsetX = value
         end,
     })
 
     Tab:CreateSlider({
-        name = "Player Y Offset",
-        range = {-50, 50},
+        name = "Player Offset Y",
+        range = { -50, 50 },
         increment = 1,
-        currentValue = 5,
-
+        value = State.PlayerFarmOffsetY or 0,
+        suffix = " Y",
         callback = function(value)
             State.PlayerFarmOffsetY = value
         end,
     })
 
     Tab:CreateSlider({
-        name = "Player Z Offset",
-        range = {-50, 50},
+        name = "Player Offset Z",
+        range = { -50, 50 },
         increment = 1,
-        currentValue = 5,
-
+        value = State.PlayerFarmOffsetZ or 0,
+        suffix = " Z",
         callback = function(value)
             State.PlayerFarmOffsetZ = value
         end,
     })
 
-    Tab:CreateSlider({
-        name = "Player Distance",
-        range = {1, 50},
-        increment = 1,
-        currentValue = 10,
-
-        callback = function(value)
-            State.PlayerFarmDistance = value
-        end,
-    })
-
-    -- ========================================================
+    ----------------------------------------------------------------
     -- DEBUG
-    -- ========================================================
+    ----------------------------------------------------------------
 
-    Tab:CreateParagraph({
-        name = "Debug",
-        content = "Ferramentas de diagnóstico do Project Slayers 2."
+    Tab:CreateText({
+        name = "Farm Debug",
+        text = "Ferramentas de diagnóstico da interface.",
     })
 
     Tab:CreateButton({
         name = "Farm Debug Test",
-
+        description = "Mostra o estado atual do módulo Farm.",
         callback = function()
-
             print("================================")
-            print("[Farm] DEBUG")
+            print("[FarmUI] DEBUG")
             print("================================")
-            print("State:", State ~= nil)
             print("TargetMob:", State.TargetMob)
+            print("FarmMobs:", State.FarmMobs)
+            print("MobKillAura:", State.MobKillAura)
             print("TargetBoss:", State.TargetBoss)
+            print("BossFarm:", State.BossFarm)
             print("TargetQuest:", State.TargetQuest)
+            print("AutoQuest:", State.AutoQuest)
             print("TargetPlayer:", State.TargetPlayer)
+            print("FarmPlayer:", State.FarmPlayer)
+            print("PlayerKillAura:", State.PlayerKillAura)
             print("================================")
-
         end,
     })
 
-    print("[UI] Farm finalizado.")
+    print("[FarmUI] Inicializado com sucesso.")
 
+    return FarmUI
 end
 
 return FarmUI
