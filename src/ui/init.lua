@@ -62,14 +62,36 @@ function UI.Init(Config)
         return result
     end
 
-    local State = LoadModule("src/core/state.lua")
+    -- ========================================================
+    -- CORE
+    -- ========================================================
+
+    local State = LoadModule(
+        "src/core/state.lua"
+    )
+
     print("[UI] State central carregado.")
 
-    local Services = LoadModule("src/core/services.lua")
+    local Services = LoadModule(
+        "src/core/services.lua"
+    )
+
     print("[UI] Services central carregado.")
 
+    local Entities = LoadModule(
+        "src/core/entities.lua"
+    )
+
+    print("[UI] Entity Manager carregado.")
+
+    -- ========================================================
+    -- RAYFIELD
+    -- ========================================================
+
     local Rayfield = loadstring(
-        game:HttpGet("https://sirius.menu/gen2")
+        game:HttpGet(
+            "https://sirius.menu/gen2"
+        )
     )()
 
     local Window = Rayfield:CreateWindow({
@@ -104,51 +126,132 @@ function UI.Init(Config)
         name = "Navigation"
     })
 
+    -- ========================================================
+    -- STATE CONNECTION
+    -- ========================================================
+
     State.Visible = true
     State.Rayfield = Rayfield
     State.Window = Window
     State.Tabs = Tabs
     State.Services = Services
+    State.Entities = Entities
 
-    UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+    -- ========================================================
+    -- TOGGLE UI
+    -- ========================================================
 
-        if GameProcessed then
-            return
+    UserInputService.InputBegan:Connect(
+        function(Input, GameProcessed)
+
+            if GameProcessed then
+                return
+            end
+
+            if Input.KeyCode == Enum.KeyCode.LeftShift then
+
+                State.Visible = not State.Visible
+
+                Rayfield:SetVisibility(
+                    State.Visible
+                )
+
+                print(
+                    "[UI] Visibilidade:",
+                    State.Visible
+                        and "ON"
+                        or "OFF"
+                )
+
+            end
+
         end
+    )
 
-        if Input.KeyCode == Enum.KeyCode.LeftShift then
+    -- ========================================================
+    -- FARM MODULES
+    -- ========================================================
 
-            State.Visible = not State.Visible
+    local Mobs = LoadModule(
+        "src/farm/mobs.lua"
+    )
 
-            Rayfield:SetVisibility(State.Visible)
-
-            print(
-                "[UI] Visibilidade:",
-                State.Visible and "ON" or "OFF"
-            )
-        end
-    end)
-
-    local Mobs = LoadModule("src/farm/mobs.lua")
     print("[UI] Mobs carregado.")
 
-    local Boss = LoadModule("src/farm/boss.lua")
+    local Boss = LoadModule(
+        "src/farm/boss.lua"
+    )
+
     print("[UI] Boss carregado.")
 
-    local Quests = LoadModule("src/farm/quests.lua")
+    local Quests = LoadModule(
+        "src/farm/quests.lua"
+    )
+
     print("[UI] Quests carregado.")
 
-    local FarmService = LoadModule("src/farm/service.lua")
-    print("[UI] FarmService carregado.")
+    -- ========================================================
+    -- SCANNER
+    -- ========================================================
 
-    local Scanner = LoadModule("src/debug/scanner.lua")
+    local Scanner = LoadModule(
+        "src/debug/scanner.lua"
+    )
+
     print("[UI] Scanner carregado.")
 
-    Services.Register("Farm", FarmService)
+    -- ========================================================
+    -- FARM SERVICE
+    -- ========================================================
+
+    local FarmService = LoadModule(
+        "src/farm/service.lua"
+    )
+
+    print("[UI] FarmService carregado.")
+
+    -- ========================================================
+    -- SERVICES REGISTRY
+    -- ========================================================
+
+    Services.Register(
+        "Scanner",
+        Scanner
+    )
+
+    print("[UI] Scanner registrado.")
+
+    Services.Register(
+        "Entities",
+        Entities
+    )
+
+    print("[UI] Entity Manager registrado.")
+
+    Services.Register(
+        "Farm",
+        FarmService
+    )
+
     print("[UI] FarmService registrado.")
 
-    Services.Register("Scanner", Scanner)
-    print("[UI] Scanner registrado.")
+    -- ========================================================
+    -- ENTITY MANAGER
+    -- ========================================================
+
+    Entities.Init(State)
+
+    Entities.SetScanner(
+        Scanner
+    )
+
+    print(
+        "[UI] Entity Manager conectado ao Scanner."
+    )
+
+    -- ========================================================
+    -- FARM SERVICE
+    -- ========================================================
 
     FarmService.Init(
         State,
@@ -157,16 +260,39 @@ function UI.Init(Config)
         Quests
     )
 
-    print("[UI] FarmService inicializado.")
+    print(
+        "[UI] FarmService inicializado."
+    )
+
+    -- ========================================================
+    -- PAGES
+    -- ========================================================
 
     local Pages = {}
 
-    Pages.Farm = LoadModule("src/ui/farm.lua")
-    Pages.Combat = LoadModule("src/ui/combat.lua")
-    Pages.Player = LoadModule("src/ui/player.lua")
-    Pages.ESP = LoadModule("src/ui/esp.lua")
-    Pages.World = LoadModule("src/ui/world.lua")
-    Pages.Navigation = LoadModule("src/ui/navigation.lua")
+    Pages.Farm = LoadModule(
+        "src/ui/farm.lua"
+    )
+
+    Pages.Combat = LoadModule(
+        "src/ui/combat.lua"
+    )
+
+    Pages.Player = LoadModule(
+        "src/ui/player.lua"
+    )
+
+    Pages.ESP = LoadModule(
+        "src/ui/esp.lua"
+    )
+
+    Pages.World = LoadModule(
+        "src/ui/world.lua"
+    )
+
+    Pages.Navigation = LoadModule(
+        "src/ui/navigation.lua"
+    )
 
     print(
         "[UI] Pages carregadas:",
@@ -177,6 +303,10 @@ function UI.Init(Config)
         "World =", Pages.World,
         "Navigation =", Pages.Navigation
     )
+
+    -- ========================================================
+    -- VALIDATION
+    -- ========================================================
 
     if type(Pages.Farm) ~= "table" then
         error("[UI] Pages.Farm inválido.")
@@ -202,29 +332,9 @@ function UI.Init(Config)
         error("[UI] Pages.Navigation inválido.")
     end
 
-    if type(Pages.Farm.Init) ~= "function" then
-        error("[UI] Pages.Farm.Init inválido.")
-    end
-
-    if type(Pages.Combat.Init) ~= "function" then
-        error("[UI] Pages.Combat.Init inválido.")
-    end
-
-    if type(Pages.Player.Init) ~= "function" then
-        error("[UI] Pages.Player.Init inválido.")
-    end
-
-    if type(Pages.ESP.Init) ~= "function" then
-        error("[UI] Pages.ESP.Init inválido.")
-    end
-
-    if type(Pages.World.Init) ~= "function" then
-        error("[UI] Pages.World.Init inválido.")
-    end
-
-    if type(Pages.Navigation.Init) ~= "function" then
-        error("[UI] Pages.Navigation.Init inválido.")
-    end
+    -- ========================================================
+    -- PAGE INIT
+    -- ========================================================
 
     Pages.Farm.Init(
         Tabs.Farm,
@@ -256,16 +366,23 @@ function UI.Init(Config)
         State
     )
 
+    -- ========================================================
+    -- FINAL STATE
+    -- ========================================================
+
     State.Pages = Pages
     State.Mobs = Mobs
     State.Boss = Boss
     State.Quests = Quests
     State.FarmService = FarmService
     State.Scanner = Scanner
+    State.Entities = Entities
 
     print("[UI] Rayfield carregado.")
     print("[UI] State central conectado.")
     print("[UI] Services central conectado.")
+    print("[UI] Entity Manager conectado.")
+    print("[UI] Scanner conectado.")
     print("[UI] Todas as Pages carregadas.")
 
     return State
