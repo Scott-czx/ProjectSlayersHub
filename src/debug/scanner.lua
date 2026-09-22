@@ -29,6 +29,7 @@ local Results = {
     QuestNPCs = {},
     Prompts = {},
     SearchResults = {},
+    Entities = {},
     LastScan = 0,
 }
 
@@ -94,6 +95,63 @@ local function GetAttributes(object)
     return {}
 end
 
+local function GetParentName(object)
+
+    local success, result = pcall(function()
+
+        if object.Parent then
+            return object.Parent.Name
+        end
+
+        return nil
+
+    end)
+
+    if success then
+        return result
+    end
+
+    return nil
+end
+
+local function GetPosition(object)
+
+    local success, result = pcall(function()
+
+        if object:IsA("BasePart") then
+            return object.Position
+        end
+
+        if object:IsA("Model") then
+            return object:GetPivot().Position
+        end
+
+        return nil
+
+    end)
+
+    if success then
+        return result
+    end
+
+    return nil
+end
+
+local function CreateResult(object, resultType)
+
+    return {
+        Type = resultType,
+        Instance = object,
+        Name = object.Name,
+        FullName = GetFullName(object),
+        ClassName = GetClassName(object),
+        ParentName = GetParentName(object),
+        Attributes = GetAttributes(object),
+        Position = GetPosition(object),
+    }
+
+end
+
 local function GetHumanoidInfo(model)
 
     if not model:IsA("Model") then
@@ -108,14 +166,37 @@ local function GetHumanoidInfo(model)
         return nil
     end
 
-    return {
-        Instance = model,
-        Humanoid = humanoid,
-        Name = model.Name,
-        FullName = GetFullName(model),
-        Health = humanoid.Health,
-        MaxHealth = humanoid.MaxHealth,
-    }
+    local result = CreateResult(
+        model,
+        "Humanoid"
+    )
+
+    result.Humanoid = humanoid
+    result.Health = humanoid.Health
+    result.MaxHealth = humanoid.MaxHealth
+
+    return result
+
+end
+
+local function GetWorkspaceDescendants()
+
+    local success, descendants = pcall(function()
+        return workspace:GetDescendants()
+    end)
+
+    if not success then
+
+        warn(
+            "[Scanner] Falha ao obter descendants:",
+            descendants
+        )
+
+        return nil
+    end
+
+    return descendants
+
 end
 
 -- ========================================================
@@ -130,6 +211,7 @@ function Scanner.Clear()
         QuestNPCs = {},
         Prompts = {},
         SearchResults = {},
+        Entities = {},
         LastScan = 0,
     }
 
@@ -144,17 +226,9 @@ end
 function Scanner.ScanModels()
 
     local models = {}
+    local descendants = GetWorkspaceDescendants()
 
-    local success, descendants = pcall(function()
-        return workspace:GetDescendants()
-    end)
-
-    if not success then
-        warn(
-            "[Scanner] Falha ao obter descendants:",
-            descendants
-        )
-
+    if descendants == nil then
         return models
     end
 
@@ -162,13 +236,15 @@ function Scanner.ScanModels()
 
         if object:IsA("Model") then
 
-            table.insert(models, {
-                Instance = object,
-                Name = object.Name,
-                FullName = GetFullName(object),
-                ClassName = GetClassName(object),
-                Attributes = GetAttributes(object),
-            })
+            local result = CreateResult(
+                object,
+                "Model"
+            )
+
+            table.insert(
+                models,
+                result
+            )
 
         end
 
@@ -192,17 +268,9 @@ end
 function Scanner.ScanHumanoids()
 
     local humanoids = {}
+    local descendants = GetWorkspaceDescendants()
 
-    local success, descendants = pcall(function()
-        return workspace:GetDescendants()
-    end)
-
-    if not success then
-        warn(
-            "[Scanner] Falha ao obter descendants:",
-            descendants
-        )
-
+    if descendants == nil then
         return humanoids
     end
 
@@ -213,10 +281,12 @@ function Scanner.ScanHumanoids()
             local info = GetHumanoidInfo(object)
 
             if info ~= nil then
+
                 table.insert(
                     humanoids,
                     info
                 )
+
             end
 
         end
@@ -241,38 +311,29 @@ end
 function Scanner.ScanQuestNPCs()
 
     local questNPCs = {}
+    local descendants = GetWorkspaceDescendants()
 
-    local success, descendants = pcall(function()
-        return workspace:GetDescendants()
-    end)
-
-    if not success then
-        warn(
-            "[Scanner] Falha ao obter descendants:",
-            descendants
-        )
-
+    if descendants == nil then
         return questNPCs
     end
 
     for _, object in ipairs(descendants) do
 
-        if object:IsA("Model") and IsKnownName(object.Name) then
+        if object:IsA("Model")
+            and IsKnownName(object.Name) then
 
             local humanoidInfo = GetHumanoidInfo(object)
 
-            local entry = {
-                Instance = object,
-                Name = object.Name,
-                FullName = GetFullName(object),
-                ClassName = GetClassName(object),
-                Attributes = GetAttributes(object),
-                Humanoid = humanoidInfo,
-            }
+            local result = CreateResult(
+                object,
+                "QuestNPC"
+            )
+
+            result.Humanoid = humanoidInfo
 
             table.insert(
                 questNPCs,
-                entry
+                result
             )
 
         end
@@ -297,17 +358,9 @@ end
 function Scanner.ScanPrompts()
 
     local prompts = {}
+    local descendants = GetWorkspaceDescendants()
 
-    local success, descendants = pcall(function()
-        return workspace:GetDescendants()
-    end)
-
-    if not success then
-        warn(
-            "[Scanner] Falha ao obter descendants:",
-            descendants
-        )
-
+    if descendants == nil then
         return prompts
     end
 
@@ -315,16 +368,21 @@ function Scanner.ScanPrompts()
 
         if object:IsA("ProximityPrompt") then
 
+            local result = CreateResult(
+                object,
+                "ProximityPrompt"
+            )
+
+            result.ActionText = object.ActionText
+            result.ObjectText = object.ObjectText
+            result.Enabled = object.Enabled
+            result.HoldDuration = object.HoldDuration
+            result.MaxActivationDistance =
+                object.MaxActivationDistance
+
             table.insert(
                 prompts,
-                {
-                    Instance = object,
-                    Name = object.Name,
-                    FullName = GetFullName(object),
-                    ActionText = object.ActionText,
-                    ObjectText = object.ObjectText,
-                    Enabled = object.Enabled,
-                }
+                result
             )
 
         end
@@ -339,6 +397,52 @@ function Scanner.ScanPrompts()
     )
 
     return prompts
+
+end
+
+-- ========================================================
+-- BUILD ENTITIES
+-- ========================================================
+
+function Scanner.BuildEntities()
+
+    local entities = {}
+
+    for _, result in ipairs(Results.Models) do
+
+        table.insert(
+            entities,
+            result
+        )
+
+    end
+
+    for _, result in ipairs(Results.Humanoids) do
+
+        table.insert(
+            entities,
+            result
+        )
+
+    end
+
+    for _, result in ipairs(Results.QuestNPCs) do
+
+        table.insert(
+            entities,
+            result
+        )
+
+    end
+
+    Results.Entities = entities
+
+    print(
+        "[Scanner] Entidades padronizadas:",
+        #entities
+    )
+
+    return entities
 
 end
 
@@ -358,10 +462,12 @@ function Scanner.Scan()
     Scanner.ScanHumanoids()
     Scanner.ScanQuestNPCs()
     Scanner.ScanPrompts()
+    Scanner.BuildEntities()
 
     Results.LastScan = os.clock()
 
     print("--------------------------------")
+
     print(
         "[Scanner] Models:",
         #Results.Models
@@ -382,6 +488,11 @@ function Scanner.Scan()
         #Results.Prompts
     )
 
+    print(
+        "[Scanner] Entities:",
+        #Results.Entities
+    )
+
     print("================================")
 
     return Results
@@ -400,18 +511,14 @@ function Scanner.Search(text)
 
     local wanted = string.lower(text)
 
+    if wanted == "" then
+        return {}
+    end
+
     local found = {}
+    local descendants = GetWorkspaceDescendants()
 
-    local success, descendants = pcall(function()
-        return workspace:GetDescendants()
-    end)
-
-    if not success then
-        warn(
-            "[Scanner] Falha ao pesquisar:",
-            descendants
-        )
-
+    if descendants == nil then
         return found
     end
 
@@ -430,12 +537,10 @@ function Scanner.Search(text)
 
             table.insert(
                 found,
-                {
-                    Instance = object,
-                    Name = object.Name,
-                    FullName = GetFullName(object),
-                    ClassName = GetClassName(object),
-                }
+                CreateResult(
+                    object,
+                    "Search"
+                )
             )
 
         end
@@ -457,16 +562,20 @@ function Scanner.Search(text)
             "[" .. index .. "]",
             result.FullName,
             "|",
-            result.ClassName
+            result.ClassName,
+            "| Type:",
+            result.Type
         )
 
     end
 
     print("--------------------------------")
+
     print(
         "[Scanner] Encontrados:",
         #found
     )
+
     print("================================")
 
     return found
@@ -507,9 +616,80 @@ function Scanner.GetPrompts()
 
 end
 
+function Scanner.GetEntities()
+
+    return Results.Entities
+
+end
+
 function Scanner.GetSearchResults()
 
     return Results.SearchResults
+
+end
+
+function Scanner.GetLastScan()
+
+    return Results.LastScan
+
+end
+
+-- ========================================================
+-- FIND BY TYPE
+-- ========================================================
+
+function Scanner.GetEntitiesByType(entityType)
+
+    if type(entityType) ~= "string" then
+        return {}
+    end
+
+    local found = {}
+
+    for _, entity in ipairs(Results.Entities) do
+
+        if entity.Type == entityType then
+
+            table.insert(
+                found,
+                entity
+            )
+
+        end
+
+    end
+
+    return found
+
+end
+
+-- ========================================================
+-- FIND BY NAME
+-- ========================================================
+
+function Scanner.FindByName(name)
+
+    if type(name) ~= "string" then
+        return {}
+    end
+
+    local wanted = string.lower(name)
+    local found = {}
+
+    for _, entity in ipairs(Results.Entities) do
+
+        if string.lower(entity.Name) == wanted then
+
+            table.insert(
+                found,
+                entity
+            )
+
+        end
+
+    end
+
+    return found
 
 end
 
@@ -559,6 +739,11 @@ function Scanner.Debug()
     )
 
     print(
+        "Entities:",
+        #Results.Entities
+    )
+
+    print(
         "Search Results:",
         #Results.SearchResults
     )
@@ -579,6 +764,12 @@ end
 function Scanner.GetKnownQuestNames()
 
     return KnownQuestNames
+
+end
+
+function Scanner.GetMaxDepth()
+
+    return MAX_DEPTH
 
 end
 
