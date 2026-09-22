@@ -4,19 +4,22 @@ function CombatUI.Init(Tab, State)
 
     print("[UI] Combat inicializado.")
 
-    -- =========================
+    ------------------------------------------------------------
     -- COMBAT
-    -- =========================
+    ------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Combat",
-        content = "Configurações gerais de combate."
+        text = "Configurações gerais de combate."
     })
 
-    -- Kill Aura
+    ------------------------------------------------------------
+    -- KILL AURA
+    ------------------------------------------------------------
+
     Tab:CreateToggle({
         name = "Kill Aura",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.CombatKillAura = value
@@ -28,12 +31,15 @@ function CombatUI.Init(Tab, State)
         end,
     })
 
-    -- Velocidade da Kill Aura
+    ------------------------------------------------------------
+    -- KILL AURA SPEED
+    ------------------------------------------------------------
+
     Tab:CreateSlider({
         name = "Kill Aura Speed",
         range = {1, 100},
         increment = 1,
-        currentValue = 10,
+        value = State.KillAuraSpeed or 10,
 
         callback = function(value)
             State.KillAuraSpeed = value
@@ -45,10 +51,13 @@ function CombatUI.Init(Tab, State)
         end,
     })
 
-    -- Insta Kill
+    ------------------------------------------------------------
+    -- INSTA KILL
+    ------------------------------------------------------------
+
     Tab:CreateToggle({
         name = "Insta Kill",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.InstaKill = value
@@ -60,13 +69,16 @@ function CombatUI.Init(Tab, State)
         end,
     })
 
-    -- HP Threshold
+    ------------------------------------------------------------
+    -- HP THRESHOLD
+    ------------------------------------------------------------
+
     Tab:CreateSlider({
         name = "HP Threshold",
         range = {1, 100},
         increment = 1,
         suffix = "%",
-        currentValue = 100,
+        value = State.HPThreshold or 100,
 
         callback = function(value)
             State.HPThreshold = value
@@ -78,12 +90,15 @@ function CombatUI.Init(Tab, State)
         end,
     })
 
-    -- Range
+    ------------------------------------------------------------
+    -- RANGE
+    ------------------------------------------------------------
+
     Tab:CreateSlider({
         name = "Range",
         range = {1, 100},
         increment = 1,
-        currentValue = 25,
+        value = State.CombatRange or 25,
 
         callback = function(value)
             State.CombatRange = value
@@ -95,18 +110,18 @@ function CombatUI.Init(Tab, State)
         end,
     })
 
-    -- =========================
+    ------------------------------------------------------------
     -- NETWORK
-    -- =========================
+    ------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Network",
-        content = "Informações relacionadas à rede e ownership."
+        text = "Informações relacionadas à rede e ownership."
     })
 
     Tab:CreateToggle({
         name = "Show Ownership",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.ShowOwnership = value
@@ -117,6 +132,8 @@ function CombatUI.Init(Tab, State)
             )
         end,
     })
+
+    print("[UI] Combat UI carregada com sucesso.")
 
 end
 
