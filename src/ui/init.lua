@@ -4,19 +4,11 @@ function UI.Init(Config)
 
     print("[UI] Inicializando " .. Config.ProjectName)
 
-    -- ========================================================
-    -- SERVICES
-    -- ========================================================
-
     local UserInputService = game:GetService("UserInputService")
 
-    -- ========================================================
-    -- MODULE LOADER
-    -- ========================================================
-
     local function LoadModule(path)
+        local url = Config.BaseURL .. path .. "?v=" .. tostring(os.clock())
 
-        local url = Config.BaseURL .. path
         local source = game:HttpGet(url)
 
         local success, result = pcall(function()
@@ -35,37 +27,23 @@ function UI.Init(Config)
         return result
     end
 
-    -- ========================================================
-    -- CENTRAL STATE
-    -- ========================================================
+    ------------------------------------------------------------
+    -- CORE
+    ------------------------------------------------------------
 
-    local State = LoadModule(
-        "src/core/state.lua"
-    )
-
+    local State = LoadModule("src/core/state.lua")
     print("[UI] State central carregado.")
 
-    -- ========================================================
-    -- CENTRAL SERVICES
-    -- ========================================================
-
-    local Services = LoadModule(
-        "src/core/services.lua"
-    )
-
+    local Services = LoadModule("src/core/services.lua")
     print("[UI] Services central carregado.")
 
-    -- ========================================================
+    ------------------------------------------------------------
     -- RAYFIELD
-    -- ========================================================
+    ------------------------------------------------------------
 
     local Rayfield = loadstring(
         game:HttpGet("https://sirius.menu/gen2")
     )()
-
-    -- ========================================================
-    -- WINDOW
-    -- ========================================================
 
     local Window = Rayfield:CreateWindow({
         name = Config.ProjectName,
@@ -73,50 +51,45 @@ function UI.Init(Config)
         sidebarLayout = true,
     })
 
-    -- ========================================================
-    -- TABS
-    -- ========================================================
-
     local Tabs = {}
 
     Tabs.Farm = Window:CreateTab({
-        name = "Farm",
+        name = "Farm"
     })
 
     Tabs.Combat = Window:CreateTab({
-        name = "Combat",
+        name = "Combat"
     })
 
     Tabs.Player = Window:CreateTab({
-        name = "Player",
+        name = "Player"
     })
 
     Tabs.ESP = Window:CreateTab({
-        name = "ESP",
+        name = "ESP"
     })
 
     Tabs.World = Window:CreateTab({
-        name = "World",
+        name = "World"
     })
 
     Tabs.Navigation = Window:CreateTab({
-        name = "Navigation",
+        name = "Navigation"
     })
 
-    -- ========================================================
-    -- CENTRAL STATE REFERENCES
-    -- ========================================================
+    ------------------------------------------------------------
+    -- STATE UI
+    ------------------------------------------------------------
 
     State.Visible = true
-
     State.Rayfield = Rayfield
     State.Window = Window
     State.Tabs = Tabs
     State.Services = Services
 
-    -- ========================================================
-    -- UI VISIBILITY
-    -- ========================================================
+    ------------------------------------------------------------
+    -- TOGGLE UI
+    ------------------------------------------------------------
 
     UserInputService.InputBegan:Connect(function(
         Input,
@@ -142,9 +115,9 @@ function UI.Init(Config)
         end
     end)
 
-    -- ========================================================
-    -- LOAD MOBS MODULE
-    -- ========================================================
+    ------------------------------------------------------------
+    -- FARM MODULES
+    ------------------------------------------------------------
 
     local Mobs = LoadModule(
         "src/farm/mobs.lua"
@@ -152,19 +125,11 @@ function UI.Init(Config)
 
     print("[UI] Mobs carregado.")
 
-    -- ========================================================
-    -- LOAD BOSS MODULE
-    -- ========================================================
-
     local Boss = LoadModule(
         "src/farm/boss.lua"
     )
 
     print("[UI] Boss carregado.")
-
-    -- ========================================================
-    -- LOAD QUESTS MODULE
-    -- ========================================================
 
     local Quests = LoadModule(
         "src/farm/quests.lua"
@@ -172,19 +137,15 @@ function UI.Init(Config)
 
     print("[UI] Quests carregado.")
 
-    -- ========================================================
-    -- LOAD FARM SERVICE
-    -- ========================================================
-
     local FarmService = LoadModule(
         "src/farm/service.lua"
     )
 
     print("[UI] FarmService carregado.")
 
-    -- ========================================================
-    -- LOAD DEBUG SCANNER
-    -- ========================================================
+    ------------------------------------------------------------
+    -- DEBUG
+    ------------------------------------------------------------
 
     local Scanner = LoadModule(
         "src/debug/scanner.lua"
@@ -192,9 +153,9 @@ function UI.Init(Config)
 
     print("[UI] Scanner carregado.")
 
-    -- ========================================================
-    -- REGISTER FARM SERVICE
-    -- ========================================================
+    ------------------------------------------------------------
+    -- SERVICES
+    ------------------------------------------------------------
 
     Services.Register(
         "Farm",
@@ -203,10 +164,6 @@ function UI.Init(Config)
 
     print("[UI] FarmService registrado.")
 
-    -- ========================================================
-    -- REGISTER SCANNER
-    -- ========================================================
-
     Services.Register(
         "Scanner",
         Scanner
@@ -214,9 +171,9 @@ function UI.Init(Config)
 
     print("[UI] Scanner registrado.")
 
-    -- ========================================================
-    -- INITIALIZE FARM SERVICE
-    -- ========================================================
+    ------------------------------------------------------------
+    -- FARM INITIALIZATION
+    ------------------------------------------------------------
 
     FarmService.Init(
         State,
@@ -230,14 +187,14 @@ function UI.Init(Config)
     print("[UI] Boss conectado ao FarmService.")
     print("[UI] Quests conectado ao FarmService.")
 
-    -- ========================================================
+    ------------------------------------------------------------
     -- DEBUG UI
-    -- ========================================================
+    ------------------------------------------------------------
 
     Tabs.Farm:CreateText({
-    name = "Project Slayers 2 - Debug",
-    text = "Ferramentas de diagnóstico para descobrir a estrutura real do jogo."
-})
+        name = "Project Slayers 2 - Debug",
+        text = "Ferramentas de diagnóstico para descobrir a estrutura real do jogo."
+    })
 
     Tabs.Farm:CreateButton({
         name = "Scan Quest NPCs",
@@ -250,13 +207,10 @@ function UI.Init(Config)
             print("================================")
 
             local success, result = pcall(function()
-
                 return Scanner.ScanQuestNPCs()
-
             end)
 
             if not success then
-
                 warn(
                     "[UI] Erro no Scanner:",
                     result
@@ -269,7 +223,6 @@ function UI.Init(Config)
                 "[UI] Scan concluído. NPCs encontrados:",
                 result
             )
-
         end,
     })
 
@@ -279,26 +232,23 @@ function UI.Init(Config)
         callback = function()
 
             local success, result = pcall(function()
-
                 return Scanner.Debug()
-
             end)
 
             if not success then
-
                 warn(
                     "[UI] Erro no Scanner Debug:",
                     result
                 )
-
             end
-
         end,
     })
 
     Tabs.Farm:CreateInput({
         name = "Search Workspace",
-        placeholderText = "Digite um nome...",
+
+        placeholder = "Digite um nome...",
+
         removeTextAfterFocusLost = false,
 
         callback = function(value)
@@ -318,13 +268,10 @@ function UI.Init(Config)
             )
 
             local success, result = pcall(function()
-
                 return Scanner.Search(value)
-
             end)
 
             if not success then
-
                 warn(
                     "[UI] Erro na busca:",
                     result
@@ -337,13 +284,12 @@ function UI.Init(Config)
                 "[UI] Busca concluída. Resultados:",
                 result
             )
-
         end,
     })
 
-    -- ========================================================
-    -- LOAD UI PAGES
-    -- ========================================================
+    ------------------------------------------------------------
+    -- UI PAGES
+    ------------------------------------------------------------
 
     local Pages = {}
 
@@ -371,9 +317,9 @@ function UI.Init(Config)
         "src/ui/navigation.lua"
     )
 
-    -- ========================================================
-    -- INITIALIZE UI PAGES
-    -- ========================================================
+    ------------------------------------------------------------
+    -- INITIALIZE PAGES
+    ------------------------------------------------------------
 
     Pages.Farm.Init(
         Tabs.Farm,
@@ -405,30 +351,21 @@ function UI.Init(Config)
         State
     )
 
-    -- ========================================================
-    -- STORE UI PAGES
-    -- ========================================================
+    ------------------------------------------------------------
+    -- SAVE REFERENCES
+    ------------------------------------------------------------
 
     State.Pages = Pages
-
-    -- ========================================================
-    -- STORE FARM MODULES
-    -- ========================================================
 
     State.Mobs = Mobs
     State.Boss = Boss
     State.Quests = Quests
     State.FarmService = FarmService
-
-    -- ========================================================
-    -- STORE DEBUG MODULES
-    -- ========================================================
-
     State.Scanner = Scanner
 
-    -- ========================================================
-    -- DEBUG
-    -- ========================================================
+    ------------------------------------------------------------
+    -- FINAL LOG
+    ------------------------------------------------------------
 
     print("[UI] Rayfield carregado.")
     print("[UI] State central conectado.")
@@ -446,10 +383,6 @@ function UI.Init(Config)
     print("[UI] Debug UI configurado.")
     print("[UI] 6 abas criadas.")
     print("[UI] LeftShift configurado.")
-
-    -- ========================================================
-    -- RETURN
-    -- ========================================================
 
     return State
 end
