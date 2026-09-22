@@ -20,9 +20,9 @@ function FarmUI.Init(Tab, State)
 
     print("[FarmUI] Inicializando...")
 
-    ----------------------------------------------------------------
-    -- HEADER
-    ----------------------------------------------------------------
+    -- ========================================================
+    -- FARM
+    -- ========================================================
 
     Tab:CreateText({
         name = "Project Slayers 2 - Farm",
@@ -38,10 +38,6 @@ function FarmUI.Init(Tab, State)
             print("================================")
         end,
     })
-
-    ----------------------------------------------------------------
-    -- MOBS
-    ----------------------------------------------------------------
 
     Tab:CreateText({
         name = "Farm Mobs",
@@ -106,11 +102,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.FarmMobs = value
-
-            print(
-                "[FarmUI] FarmMobs:",
-                value
-            )
+            print("[FarmUI] FarmMobs:", value)
         end,
     })
 
@@ -120,11 +112,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.MobKillAura = value
-
-            print(
-                "[FarmUI] MobKillAura:",
-                value
-            )
+            print("[FarmUI] MobKillAura:", value)
         end,
     })
 
@@ -137,17 +125,9 @@ function FarmUI.Init(Tab, State)
         suffix = " studs",
         callback = function(value)
             State.FarmDistance = value
-
-            print(
-                "[FarmUI] FarmDistance:",
-                value
-            )
+            print("[FarmUI] FarmDistance:", value)
         end,
     })
-
-    ----------------------------------------------------------------
-    -- FARM POSITION
-    ----------------------------------------------------------------
 
     Tab:CreateText({
         name = "Mob Farm Position",
@@ -187,10 +167,6 @@ function FarmUI.Init(Tab, State)
         end,
     })
 
-    ----------------------------------------------------------------
-    -- LOOT
-    ----------------------------------------------------------------
-
     Tab:CreateText({
         name = "Loot",
         text = "Configurações relacionadas à coleta.",
@@ -202,11 +178,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.AutoLootChests = value
-
-            print(
-                "[FarmUI] AutoLootChests:",
-                value
-            )
+            print("[FarmUI] AutoLootChests:", value)
         end,
     })
 
@@ -216,17 +188,9 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.PickupAura = value
-
-            print(
-                "[FarmUI] PickupAura:",
-                value
-            )
+            print("[FarmUI] PickupAura:", value)
         end,
     })
-
-    ----------------------------------------------------------------
-    -- BOSS
-    ----------------------------------------------------------------
 
     Tab:CreateText({
         name = "Boss Farm",
@@ -259,10 +223,7 @@ function FarmUI.Init(Tab, State)
                 State.TargetBoss = value
             end
 
-            print(
-                "[FarmUI] TargetBoss:",
-                State.TargetBoss
-            )
+            print("[FarmUI] TargetBoss:", State.TargetBoss)
         end,
     })
 
@@ -274,11 +235,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.BossFarm = value
-
-            print(
-                "[FarmUI] BossFarm:",
-                value
-            )
+            print("[FarmUI] BossFarm:", value)
         end,
     })
 
@@ -294,23 +251,13 @@ function FarmUI.Init(Tab, State)
                 end)
 
                 if success then
-                    print(
-                        "[FarmUI] Boss candidates:",
-                        #result
-                    )
+                    print("[FarmUI] Boss candidates:", #result)
                 else
-                    warn(
-                        "[FarmUI] Falha ao procurar bosses:",
-                        result
-                    )
+                    warn("[FarmUI] Falha ao procurar bosses:", result)
                 end
             end
         end,
     })
-
-    ----------------------------------------------------------------
-    -- QUEST
-    ----------------------------------------------------------------
 
     Tab:CreateText({
         name = "Auto Quest",
@@ -343,10 +290,7 @@ function FarmUI.Init(Tab, State)
                 State.TargetQuest = value
             end
 
-            print(
-                "[FarmUI] TargetQuest:",
-                State.TargetQuest
-            )
+            print("[FarmUI] TargetQuest:", State.TargetQuest)
         end,
     })
 
@@ -358,11 +302,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.AutoQuest = value
-
-            print(
-                "[FarmUI] AutoQuest:",
-                value
-            )
+            print("[FarmUI] AutoQuest:", value)
         end,
     })
 
@@ -378,23 +318,13 @@ function FarmUI.Init(Tab, State)
                 end)
 
                 if success then
-                    print(
-                        "[FarmUI] Quest NPCs encontrados:",
-                        #result
-                    )
+                    print("[FarmUI] Quest NPCs encontrados:", #result)
                 else
-                    warn(
-                        "[FarmUI] Falha ao procurar Quest NPCs:",
-                        result
-                    )
+                    warn("[FarmUI] Falha ao procurar Quest NPCs:", result)
                 end
             end
         end,
     })
-
-    ----------------------------------------------------------------
-    -- PLAYERS
-    ----------------------------------------------------------------
 
     Tab:CreateText({
         name = "Farm Players",
@@ -404,9 +334,7 @@ function FarmUI.Init(Tab, State)
     local TargetPlayerElement = Tab:CreateDropdown({
         name = "Target Player",
         description = "Lista temporária para configuração da interface.",
-        options = {
-            "Nenhum",
-        },
+        options = {"Nenhum"},
         value = "Nenhum",
         callback = function(option)
             local value = NormalizeDropdownValue(option)
@@ -417,10 +345,7 @@ function FarmUI.Init(Tab, State)
                 State.TargetPlayer = value
             end
 
-            print(
-                "[FarmUI] TargetPlayer:",
-                State.TargetPlayer
-            )
+            print("[FarmUI] TargetPlayer:", State.TargetPlayer)
         end,
     })
 
@@ -440,11 +365,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.FarmPlayer = value
-
-            print(
-                "[FarmUI] FarmPlayer:",
-                value
-            )
+            print("[FarmUI] FarmPlayer:", value)
         end,
     })
 
@@ -454,11 +375,7 @@ function FarmUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.PlayerKillAura = value
-
-            print(
-                "[FarmUI] PlayerKillAura:",
-                value
-            )
+            print("[FarmUI] PlayerKillAura:", value)
         end,
     })
 
@@ -472,10 +389,6 @@ function FarmUI.Init(Tab, State)
             State.PlayerFarmDistance = value
         end,
     })
-
-    ----------------------------------------------------------------
-    -- PLAYER FARM POSITION
-    ----------------------------------------------------------------
 
     Tab:CreateText({
         name = "Player Farm Position",
@@ -515,9 +428,145 @@ function FarmUI.Init(Tab, State)
         end,
     })
 
-    ----------------------------------------------------------------
+    -- ========================================================
+    -- SCANNER
+    -- ========================================================
+
+    Tab:CreateText({
+        name = "Scanner",
+        text = "Ferramentas de diagnóstico do ambiente.",
+    })
+
+    Tab:CreateButton({
+        name = "Run Full Scan",
+        description = "Executa o scanner completo.",
+        callback = function()
+
+            if not State.Scanner then
+                warn("[FarmUI] Scanner não está disponível.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return State.Scanner.Scan()
+            end)
+
+            if not success then
+                warn("[FarmUI] Falha no Full Scan:", result)
+                return
+            end
+
+            print("================================")
+            print("[FarmUI] SCANNER RESULT")
+            print("================================")
+            print("Models:", #result.Models)
+            print("Humanoids:", #result.Humanoids)
+            print("Quest NPCs:", #result.QuestNPCs)
+            print("Prompts:", #result.Prompts)
+            print("================================")
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Scan Quest NPCs",
+        description = "Procura os NPCs de quest conhecidos.",
+        callback = function()
+
+            if not State.Scanner then
+                warn("[FarmUI] Scanner não está disponível.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return State.Scanner.ScanQuestNPCs()
+            end)
+
+            if not success then
+                warn("[FarmUI] Falha no scan de Quest NPCs:", result)
+                return
+            end
+
+            print(
+                "[FarmUI] Quest NPCs encontrados:",
+                #result
+            )
+
+            for index, npc in ipairs(result) do
+                print(
+                    "[" .. index .. "]",
+                    npc.Name,
+                    "|",
+                    npc.FullName
+                )
+            end
+        end,
+    })
+
+    local ScannerSearchInput = ""
+
+    Tab:CreateInput({
+        name = "Scanner Search",
+        description = "Digite um nome ou parte do nome para pesquisar.",
+        placeholder = "Ex: Krue",
+        value = "",
+        callback = function(value)
+            ScannerSearchInput = tostring(value or "")
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Search Scanner",
+        description = "Pesquisa o texto informado no Workspace.",
+        callback = function()
+
+            if not State.Scanner then
+                warn("[FarmUI] Scanner não está disponível.")
+                return
+            end
+
+            if ScannerSearchInput == "" then
+                warn("[FarmUI] Digite algo para pesquisar.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return State.Scanner.Search(
+                    ScannerSearchInput
+                )
+            end)
+
+            if not success then
+                warn(
+                    "[FarmUI] Falha na pesquisa:",
+                    result
+                )
+                return
+            end
+
+            print(
+                "[FarmUI] Resultados:",
+                #result
+            )
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Scanner Debug",
+        description = "Mostra o estado atual do Scanner.",
+        callback = function()
+
+            if not State.Scanner then
+                warn("[FarmUI] Scanner não está disponível.")
+                return
+            end
+
+            State.Scanner.Debug()
+        end,
+    })
+
+    -- ========================================================
     -- DEBUG
-    ----------------------------------------------------------------
+    -- ========================================================
 
     Tab:CreateText({
         name = "Farm Debug",
@@ -528,6 +577,7 @@ function FarmUI.Init(Tab, State)
         name = "Farm Debug Test",
         description = "Mostra o estado atual do módulo Farm.",
         callback = function()
+
             print("================================")
             print("[FarmUI] DEBUG")
             print("================================")
@@ -542,6 +592,7 @@ function FarmUI.Init(Tab, State)
             print("FarmPlayer:", State.FarmPlayer)
             print("PlayerKillAura:", State.PlayerKillAura)
             print("================================")
+
         end,
     })
 
