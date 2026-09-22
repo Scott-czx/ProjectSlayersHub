@@ -1,6 +1,22 @@
 local NavigationUI = {}
 
+local function NormalizeDropdownValue(option)
+    if type(option) == "table" then
+        return option[1]
+    end
+
+    return option
+end
+
 function NavigationUI.Init(Tab, State)
+
+    if Tab == nil then
+        error("[NavigationUI] Tab inválida.")
+    end
+
+    if type(State) ~= "table" then
+        error("[NavigationUI] State inválido.")
+    end
 
     print("[UI] Navigation inicializado.")
 
@@ -8,14 +24,14 @@ function NavigationUI.Init(Tab, State)
     -- COORDINATES
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Coordinates",
-        content = "Ferramentas para visualizar e trabalhar com coordenadas."
+        text = "Ferramentas para visualizar e trabalhar com coordenadas."
     })
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Current Position",
-        content = "X: 0 | Y: 0 | Z: 0"
+        text = "X: 0 | Y: 0 | Z: 0"
     })
 
     Tab:CreateButton({
@@ -42,7 +58,7 @@ function NavigationUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Click TP",
-        currentValue = false,
+        value = State.ClickTP or false,
 
         callback = function(value)
             State.ClickTP = value
@@ -58,16 +74,16 @@ function NavigationUI.Init(Tab, State)
     -- TELEPORT SETTINGS
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Teleport Settings",
-        content = "Configurações relacionadas ao destino."
+        text = "Configurações relacionadas ao destino."
     })
 
     Tab:CreateSlider({
         name = "Tween Speed",
         range = {10, 500},
         increment = 10,
-        currentValue = 100,
+        value = State.TweenSpeed or 100,
         suffix = " studs/s",
 
         callback = function(value)
@@ -82,7 +98,7 @@ function NavigationUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Tween Bypass",
-        currentValue = false,
+        value = State.TweenBypass or false,
 
         callback = function(value)
             State.TweenBypass = value
@@ -98,27 +114,33 @@ function NavigationUI.Init(Tab, State)
     -- PLACE
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Place",
-        content = "Selecione um destino predefinido."
+        text = "Selecione um destino predefinido."
     })
 
     local SelectPlace = Tab:CreateDropdown({
         name = "Select Place",
+
         options = {
             "Nenhum lugar encontrado"
         },
 
-        currentOption = {
-            "Nenhum lugar encontrado"
-        },
+        value = State.SelectedPlace or "Nenhum lugar encontrado",
 
         callback = function(option)
-            State.SelectedPlace = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhum lugar encontrado" then
+                State.SelectedPlace = nil
+            else
+                State.SelectedPlace = value
+            end
 
             print(
                 "[Navigation] Select Place:",
-                option
+                State.SelectedPlace
             )
         end,
     })
@@ -149,29 +171,35 @@ function NavigationUI.Init(Tab, State)
     -- TELEPORTS
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Teleports",
-        content = "Teletransportes para NPCs, jogadores, mobs e regiões."
+        text = "Teletransportes para NPCs, jogadores, mobs e regiões."
     })
 
     -- NPC Teleport
 
     local SelectNPC = Tab:CreateDropdown({
         name = "NPC Teleport",
+
         options = {
             "Nenhum NPC encontrado"
         },
 
-        currentOption = {
-            "Nenhum NPC encontrado"
-        },
+        value = State.SelectedNPC or "Nenhum NPC encontrado",
 
         callback = function(option)
-            State.SelectedNPC = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhum NPC encontrado" then
+                State.SelectedNPC = nil
+            else
+                State.SelectedNPC = value
+            end
 
             print(
                 "[Navigation] NPC selecionado:",
-                option
+                State.SelectedNPC
             )
         end,
     })
@@ -202,20 +230,26 @@ function NavigationUI.Init(Tab, State)
 
     local SelectTeleportPlayer = Tab:CreateDropdown({
         name = "Player Teleport",
+
         options = {
             "Nenhum jogador encontrado"
         },
 
-        currentOption = {
-            "Nenhum jogador encontrado"
-        },
+        value = State.SelectedTeleportPlayer or "Nenhum jogador encontrado",
 
         callback = function(option)
-            State.SelectedTeleportPlayer = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhum jogador encontrado" then
+                State.SelectedTeleportPlayer = nil
+            else
+                State.SelectedTeleportPlayer = value
+            end
 
             print(
                 "[Navigation] Player selecionado:",
-                option
+                State.SelectedTeleportPlayer
             )
         end,
     })
@@ -246,20 +280,26 @@ function NavigationUI.Init(Tab, State)
 
     local SelectMob = Tab:CreateDropdown({
         name = "Mob Teleport",
+
         options = {
             "Nenhum mob encontrado"
         },
 
-        currentOption = {
-            "Nenhum mob encontrado"
-        },
+        value = State.SelectedTeleportMob or "Nenhum mob encontrado",
 
         callback = function(option)
-            State.SelectedTeleportMob = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhum mob encontrado" then
+                State.SelectedTeleportMob = nil
+            else
+                State.SelectedTeleportMob = value
+            end
 
             print(
                 "[Navigation] Mob selecionado:",
-                option
+                State.SelectedTeleportMob
             )
         end,
     })
@@ -290,20 +330,26 @@ function NavigationUI.Init(Tab, State)
 
     local SelectRegion = Tab:CreateDropdown({
         name = "Region Teleport",
+
         options = {
             "Nenhuma região encontrada"
         },
 
-        currentOption = {
-            "Nenhuma região encontrada"
-        },
+        value = State.SelectedRegion or "Nenhuma região encontrada",
 
         callback = function(option)
-            State.SelectedRegion = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhuma região encontrada" then
+                State.SelectedRegion = nil
+            else
+                State.SelectedRegion = value
+            end
 
             print(
                 "[Navigation] Região selecionada:",
-                option
+                State.SelectedRegion
             )
         end,
     })
@@ -323,9 +369,9 @@ function NavigationUI.Init(Tab, State)
     -- SPECIAL TELEPORTS
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Special Teleports",
-        content = "Teletransportes especiais e recursos de movimentação."
+        text = "Teletransportes especiais e recursos de movimentação."
     })
 
     Tab:CreateButton({
@@ -341,7 +387,7 @@ function NavigationUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Spider Lily Farm",
-        currentValue = false,
+        value = State.SpiderLilyFarm or false,
 
         callback = function(value)
             State.SpiderLilyFarm = value
@@ -368,47 +414,59 @@ function NavigationUI.Init(Tab, State)
     -- ATTACH
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Attach",
-        content = "Configurações para selecionar e acompanhar um alvo."
+        text = "Configurações para selecionar e acompanhar um alvo."
     })
 
     local AttachTarget = Tab:CreateDropdown({
         name = "Attach Target",
+
         options = {
             "Nenhum alvo encontrado"
         },
 
-        currentOption = {
-            "Nenhum alvo encontrado"
-        },
+        value = State.AttachTarget or "Nenhum alvo encontrado",
 
         callback = function(option)
-            State.AttachTarget = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhum alvo encontrado" then
+                State.AttachTarget = nil
+            else
+                State.AttachTarget = value
+            end
 
             print(
                 "[Navigation] Attach Target:",
-                option
+                State.AttachTarget
             )
         end,
     })
 
     local AttachPlayer = Tab:CreateDropdown({
         name = "Attach Player",
+
         options = {
             "Nenhum jogador encontrado"
         },
 
-        currentOption = {
-            "Nenhum jogador encontrado"
-        },
+        value = State.AttachPlayer or "Nenhum jogador encontrado",
 
         callback = function(option)
-            State.AttachPlayer = option
+
+            local value = NormalizeDropdownValue(option)
+
+            if value == "Nenhum jogador encontrado" then
+                State.AttachPlayer = nil
+            else
+                State.AttachPlayer = value
+            end
 
             print(
                 "[Navigation] Attach Player:",
-                option
+                State.AttachPlayer
             )
         end,
     })
@@ -417,7 +475,7 @@ function NavigationUI.Init(Tab, State)
         name = "Attach Range",
         range = {1, 100},
         increment = 1,
-        currentValue = 25,
+        value = State.AttachRange or 25,
         suffix = " studs",
 
         callback = function(value)
@@ -434,7 +492,7 @@ function NavigationUI.Init(Tab, State)
         name = "Attach Distance",
         range = {1, 100},
         increment = 1,
-        currentValue = 5,
+        value = State.AttachDistance or 5,
         suffix = " studs",
 
         callback = function(value)
@@ -451,7 +509,7 @@ function NavigationUI.Init(Tab, State)
         name = "Attach Height",
         range = {-50, 50},
         increment = 1,
-        currentValue = 0,
+        value = State.AttachHeight or 0,
         suffix = " studs",
 
         callback = function(value)
@@ -466,7 +524,7 @@ function NavigationUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Attach Target Enabled",
-        currentValue = false,
+        value = State.AttachTargetEnabled or false,
 
         callback = function(value)
             State.AttachTargetEnabled = value
@@ -480,7 +538,7 @@ function NavigationUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Attach Player Enabled",
-        currentValue = false,
+        value = State.AttachPlayerEnabled or false,
 
         callback = function(value)
             State.AttachPlayerEnabled = value
@@ -496,9 +554,9 @@ function NavigationUI.Init(Tab, State)
     -- FLING
     -- =========================
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Fling",
-        content = "Controles de teste relacionados ao alvo selecionado."
+        text = "Controles de teste relacionados ao alvo selecionado."
     })
 
     Tab:CreateButton({
@@ -525,7 +583,7 @@ function NavigationUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Anti Fling",
-        currentValue = false,
+        value = State.AntiFling or false,
 
         callback = function(value)
             State.AntiFling = value
@@ -562,8 +620,9 @@ function NavigationUI.Init(Tab, State)
         AttachPlayer = AttachPlayer,
     }
 
-    print("[UI] Navigation carregado.")
+    print("[UI] Navigation UI carregada com sucesso.")
 
+    return NavigationUI
 end
 
 return NavigationUI
