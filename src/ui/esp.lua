@@ -8,38 +8,49 @@ local function NormalizeDropdownValue(option)
     return option
 end
 
-local function GetFarmService(State)
+local function GetEntities(State)
 
-    if State.FarmService then
-        return State.FarmService
+    if State.Entities then
+        return State.Entities
     end
 
     if State.Services
         and type(State.Services.Get) == "function" then
 
-        return State.Services.Get("Farm")
-
+        return State.Services.Get("Entities")
     end
 
     return nil
 end
 
-local function GetScanner(State)
+local function PrintEntities(Entities, Title)
 
-    local FarmService = GetFarmService(State)
+    if type(Entities) ~= "table" then
+        warn("[ESP] Resultado inválido.")
+        return
+    end
 
-    if FarmService
-        and type(FarmService.GetScanner) == "function" then
+    print("================================")
+    print("[ESP]", Title)
+    print("================================")
+    print("Total:", #Entities)
 
-        return FarmService.GetScanner()
+    for index, Entity in ipairs(Entities) do
+
+        print(
+            "[" .. index .. "]",
+            Entity.Name,
+            "|",
+            Entity.Type,
+            "|",
+            Entity.ClassName,
+            "|",
+            Entity.FullName
+        )
 
     end
 
-    if State.Scanner then
-        return State.Scanner
-    end
-
-    return nil
+    print("================================")
 end
 
 function ESPUI.Init(Tab, State)
@@ -68,7 +79,10 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.PlayerESP = value
-            print("[ESP] Player ESP:", value and "ON" or "OFF")
+            print(
+                "[ESP] Player ESP:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
@@ -78,7 +92,6 @@ function ESPUI.Init(Tab, State)
             or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.PlayerESPColor = value
-            print("[ESP] Player ESP Color alterada.")
         end,
     })
 
@@ -87,10 +100,6 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.ShowLocalPlayer = value
-            print(
-                "[ESP] Show Local Player:",
-                value and "ON" or "OFF"
-            )
         end,
     })
 
@@ -108,7 +117,10 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.MobESP = value
-            print("[ESP] Mob ESP:", value and "ON" or "OFF")
+            print(
+                "[ESP] Mob ESP:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
@@ -118,7 +130,6 @@ function ESPUI.Init(Tab, State)
             or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.MobESPColor = value
-            print("[ESP] Mob ESP Color alterada.")
         end,
     })
 
@@ -136,7 +147,10 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.NPCESP = value
-            print("[ESP] NPC ESP:", value and "ON" or "OFF")
+            print(
+                "[ESP] NPC ESP:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
@@ -146,128 +160,212 @@ function ESPUI.Init(Tab, State)
             or Color3.fromRGB(255, 255, 255),
         callback = function(value)
             State.NPCESPColor = value
-            print("[ESP] NPC ESP Color alterada.")
         end,
     })
 
     -- ========================================================
-    -- SCANNER INTEGRATION
+    -- ENTITY MANAGER
     -- ========================================================
 
     Tab:CreateText({
-        name = "Scanner Integration",
-        text = "Consulta os resultados padronizados do Scanner."
+        name = "Entity Manager",
+        text = "Consulta centralizada das entidades descobertas."
     })
 
     Tab:CreateButton({
-        name = "Refresh Scanner Entities",
-        description = "Consulta as entidades encontradas pelo Scanner.",
+        name = "Refresh Entities",
+        description = "Atualiza o cache do Entity Manager usando o Scanner.",
         callback = function()
 
-            local FarmService = GetFarmService(State)
+            local Entities = GetEntities(State)
 
-            if FarmService == nil then
-                warn("[ESP] FarmService não disponível.")
+            if Entities == nil then
+                warn("[ESP] Entity Manager não disponível.")
                 return
             end
 
             local success, result = pcall(function()
-                return FarmService.GetScannedEntities()
+                return Entities.Refresh()
             end)
 
             if not success then
                 warn(
-                    "[ESP] Falha ao consultar Scanner:",
+                    "[ESP] Falha ao atualizar entidades:",
                     result
                 )
                 return
             end
 
-            print("================================")
-            print("[ESP] SCANNER ENTITIES")
-            print("================================")
-            print(
-                "Total:",
-                #result
-            )
-
-            for index, entity in ipairs(result) do
-
+            if result then
                 print(
-                    "[" .. index .. "]",
-                    entity.Name,
-                    "|",
-                    entity.Type,
-                    "|",
-                    entity.FullName
+                    "[ESP] Entity Manager atualizado."
                 )
-
             end
 
-            print("================================")
         end,
     })
 
     Tab:CreateButton({
-        name = "Refresh Scanner NPCs",
-        description = "Consulta os NPCs encontrados pelo Scanner.",
+        name = "Show All Entities",
+        description = "Mostra todas as entidades armazenadas.",
         callback = function()
 
-            local FarmService = GetFarmService(State)
+            local Entities = GetEntities(State)
 
-            if FarmService == nil then
-                warn("[ESP] FarmService não disponível.")
+            if Entities == nil then
+                warn("[ESP] Entity Manager não disponível.")
                 return
             end
 
             local success, result = pcall(function()
-                return FarmService.GetScannedQuestNPCs()
+                return Entities.GetAll()
             end)
 
             if not success then
                 warn(
-                    "[ESP] Falha ao consultar NPCs:",
+                    "[ESP] Falha ao obter entidades:",
                     result
                 )
                 return
             end
 
-            print("================================")
-            print("[ESP] SCANNER QUEST NPCs")
-            print("================================")
-            print(
-                "Total:",
-                #result
+            PrintEntities(
+                result,
+                "ALL ENTITIES"
             )
 
-            for index, npc in ipairs(result) do
-
-                print(
-                    "[" .. index .. "]",
-                    npc.Name,
-                    "|",
-                    npc.FullName
-                )
-
-            end
-
-            print("================================")
         end,
     })
 
     Tab:CreateButton({
-        name = "Scanner Debug",
-        description = "Mostra o estado do Scanner através do FarmService.",
+        name = "Show Humanoids",
+        description = "Mostra entidades que possuem Humanoid.",
         callback = function()
 
-            local FarmService = GetFarmService(State)
+            local Entities = GetEntities(State)
 
-            if FarmService == nil then
-                warn("[ESP] FarmService não disponível.")
+            if Entities == nil then
+                warn("[ESP] Entity Manager não disponível.")
                 return
             end
 
-            FarmService.DebugScanner()
+            local success, result = pcall(function()
+                return Entities.GetHumanoids()
+            end)
+
+            if not success then
+                warn(
+                    "[ESP] Falha ao obter Humanoids:",
+                    result
+                )
+                return
+            end
+
+            PrintEntities(
+                result,
+                "HUMANOIDS"
+            )
+
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Show Quest NPCs",
+        description = "Mostra os NPCs de quest encontrados.",
+        callback = function()
+
+            local Entities = GetEntities(State)
+
+            if Entities == nil then
+                warn("[ESP] Entity Manager não disponível.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return Entities.GetQuestNPCs()
+            end)
+
+            if not success then
+                warn(
+                    "[ESP] Falha ao obter Quest NPCs:",
+                    result
+                )
+                return
+            end
+
+            PrintEntities(
+                result,
+                "QUEST NPCS"
+            )
+
+        end,
+    })
+
+    local EntitySearchInput = ""
+
+    Tab:CreateInput({
+        name = "Entity Search",
+        description = "Pesquisa entidades pelo nome.",
+        placeholder = "Ex: Krue",
+        value = "",
+        callback = function(value)
+            EntitySearchInput = tostring(value or "")
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Search Entities",
+        description = "Pesquisa no cache do Entity Manager.",
+        callback = function()
+
+            local Entities = GetEntities(State)
+
+            if Entities == nil then
+                warn("[ESP] Entity Manager não disponível.")
+                return
+            end
+
+            if EntitySearchInput == "" then
+                warn("[ESP] Digite algo para pesquisar.")
+                return
+            end
+
+            local success, result = pcall(function()
+                return Entities.Search(
+                    EntitySearchInput
+                )
+            end)
+
+            if not success then
+                warn(
+                    "[ESP] Falha na pesquisa:",
+                    result
+                )
+                return
+            end
+
+            PrintEntities(
+                result,
+                "SEARCH: " .. EntitySearchInput
+            )
+
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Entity Manager Debug",
+        description = "Mostra o estado do Entity Manager.",
+        callback = function()
+
+            local Entities = GetEntities(State)
+
+            if Entities == nil then
+                warn("[ESP] Entity Manager não disponível.")
+                return
+            end
+
+            Entities.Debug()
+
         end,
     })
 
@@ -301,6 +399,7 @@ function ESPUI.Init(Tab, State)
                 "[ESP] Target:",
                 State.ESPTarget
             )
+
         end,
     })
 
@@ -320,10 +419,6 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.ESPSinglePlayer = value
-            print(
-                "[ESP] ESP Single Player:",
-                value and "ON" or "OFF"
-            )
         end,
     })
 
@@ -332,10 +427,6 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.ESPNearestOnly = value
-            print(
-                "[ESP] ESP Nearest Only:",
-                value and "ON" or "OFF"
-            )
         end,
     })
 
@@ -353,10 +444,6 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.ESPBoxes = value
-            print(
-                "[ESP] Boxes:",
-                value and "ON" or "OFF"
-            )
         end,
     })
 
@@ -365,10 +452,6 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.ESPBoxGlow = value
-            print(
-                "[ESP] Box Glow:",
-                value and "ON" or "OFF"
-            )
         end,
     })
 
@@ -377,10 +460,6 @@ function ESPUI.Init(Tab, State)
         value = false,
         callback = function(value)
             State.ESPChams = value
-            print(
-                "[ESP] Chams:",
-                value and "ON" or "OFF"
-            )
         end,
     })
 
@@ -442,10 +521,6 @@ function ESPUI.Init(Tab, State)
 
             State.ESPBoxType = value
 
-            print(
-                "[ESP] Box Type:",
-                value
-            )
         end,
     })
 
@@ -568,18 +643,9 @@ function ESPUI.Init(Tab, State)
             print("ESPWeapon:", State.ESPWeapon)
             print("ESPMaxDistance:", State.ESPMaxDistance)
             print("ESPBoxType:", State.ESPBoxType)
-            print(
-                "GlowTopTransparency:",
-                State.GlowTopTransparency
-            )
-            print(
-                "GlowBottomTransparency:",
-                State.GlowBottomTransparency
-            )
-            print(
-                "ChamsFillTransparency:",
-                State.ChamsFillTransparency
-            )
+            print("GlowTopTransparency:", State.GlowTopTransparency)
+            print("GlowBottomTransparency:", State.GlowBottomTransparency)
+            print("ChamsFillTransparency:", State.ChamsFillTransparency)
             print("================================")
 
         end,
