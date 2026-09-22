@@ -1,7 +1,9 @@
-local BASE_URL = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/"
+local CONFIG_URL =
+    "https://raw.githubusercontent.com/Scott-czx/ProjectSlayersHub/refs/heads/main/config.lua"
 
-local function LoadModule(path)
-    local url = BASE_URL .. path
+local function LoadModule(baseURL, path)
+
+    local url = baseURL .. path
 
     local source = game:HttpGet(url)
 
@@ -21,27 +23,59 @@ local function LoadModule(path)
     return result
 end
 
-local function Log(message)
-    print("[ProjectSlayersHub] " .. message)
+print("[ProjectSlayersHub] Iniciando...")
+
+-- ========================================================
+-- CONFIG
+-- ========================================================
+
+local ConfigSource = game:HttpGet(CONFIG_URL)
+
+local ConfigSuccess, Config = pcall(function()
+    return loadstring(ConfigSource)()
+end)
+
+if not ConfigSuccess then
+    error(
+        "[Loader] Falha ao carregar config.lua\n"
+        .. tostring(Config)
+    )
 end
 
-Log("Iniciando...")
+print("[ProjectSlayersHub] Config carregada.")
+print("[ProjectSlayersHub] BaseURL:", Config.BaseURL)
 
-local Config = LoadModule("config.lua")
+-- ========================================================
+-- UI
+-- ========================================================
 
-Log("Config carregada.")
+local UI = LoadModule(
+    Config.BaseURL,
+    "src/ui/init.lua"
+)
 
-local UI = LoadModule("src/ui/init.lua")
+print("[ProjectSlayersHub] UI carregada.")
 
-Log("UI carregada.")
+-- ========================================================
+-- INITIALIZE
+-- ========================================================
 
-local UIState = UI.Init(Config)
+local UISuccess, UIState = pcall(function()
+    return UI.Init(Config)
+end)
 
-Log("================================")
-Log(Config.ProjectName)
-Log("Versão: " .. Config.Version)
-Log("================================")
-Log("Projeto inicializado.")
+if not UISuccess then
+    error(
+        "[Loader] Falha ao inicializar UI\n"
+        .. tostring(UIState)
+    )
+end
+
+print("================================")
+print(Config.ProjectName)
+print("Versão: " .. Config.Version)
+print("================================")
+print("[ProjectSlayersHub] Projeto inicializado.")
 
 return {
     Config = Config,
