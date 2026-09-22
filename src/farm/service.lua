@@ -13,6 +13,7 @@ local State = nil
 local Mobs = nil
 local Boss = nil
 local Quests = nil
+local Scanner = nil
 
 -- ========================================================
 -- INTERNAL
@@ -52,6 +53,14 @@ function FarmService.Init(
     Boss = BossModule
     Quests = QuestsModule
 
+    -- Scanner é registrado antes do FarmService.
+    if State.Services
+        and type(State.Services.Get) == "function" then
+
+        Scanner = State.Services.Get("Scanner")
+
+    end
+
     Mobs.Init(State)
     Boss.Init(State)
     Quests.Init(State)
@@ -60,6 +69,12 @@ function FarmService.Init(
     print("[FarmService] Mobs conectado.")
     print("[FarmService] Boss conectado.")
     print("[FarmService] Quests conectado.")
+
+    if Scanner ~= nil then
+        print("[FarmService] Scanner conectado.")
+    else
+        warn("[FarmService] Scanner não encontrado.")
+    end
 
     return FarmService
 end
@@ -90,6 +105,131 @@ end
 function FarmService.GetQuests()
 
     return Quests
+end
+
+function FarmService.GetScanner()
+
+    return Scanner
+end
+
+-- ========================================================
+-- SCANNER
+-- ========================================================
+
+function FarmService.Scan()
+
+    if Scanner == nil then
+        warn("[FarmService] Scanner não inicializado.")
+        return nil
+    end
+
+    local success, result = pcall(function()
+        return Scanner.Scan()
+    end)
+
+    if not success then
+        warn(
+            "[FarmService] Falha no Scanner:",
+            result
+        )
+
+        return nil
+    end
+
+    return result
+end
+
+function FarmService.GetScanResults()
+
+    if Scanner == nil then
+        return nil
+    end
+
+    return Scanner.GetResults()
+end
+
+function FarmService.GetScannedEntities()
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.GetEntities()
+end
+
+function FarmService.GetScannedModels()
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.GetModels()
+end
+
+function FarmService.GetScannedHumanoids()
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.GetHumanoids()
+end
+
+function FarmService.GetScannedQuestNPCs()
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.GetQuestNPCs()
+end
+
+function FarmService.GetScannedPrompts()
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.GetPrompts()
+end
+
+function FarmService.SearchScanned(text)
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.Search(text)
+end
+
+function FarmService.GetScannedByType(entityType)
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.GetEntitiesByType(entityType)
+end
+
+function FarmService.FindScannedByName(name)
+
+    if Scanner == nil then
+        return {}
+    end
+
+    return Scanner.FindByName(name)
+end
+
+function FarmService.DebugScanner()
+
+    if Scanner == nil then
+        warn("[FarmService] Scanner não inicializado.")
+        return false
+    end
+
+    Scanner.Debug()
+
+    return true
 end
 
 -- ========================================================
@@ -504,9 +644,45 @@ function FarmService.Debug()
     )
 
     print(
+        "Scanner:",
+        Scanner ~= nil
+    )
+
+    print(
         "Running:",
         Running
     )
+
+    if Scanner ~= nil then
+
+        local results = Scanner.GetResults()
+
+        print(
+            "Scanner Models:",
+            #results.Models
+        )
+
+        print(
+            "Scanner Humanoids:",
+            #results.Humanoids
+        )
+
+        print(
+            "Scanner Quest NPCs:",
+            #results.QuestNPCs
+        )
+
+        print(
+            "Scanner Prompts:",
+            #results.Prompts
+        )
+
+        print(
+            "Scanner Entities:",
+            #results.Entities
+        )
+
+    end
 
     if Mobs ~= nil then
 
