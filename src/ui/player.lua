@@ -4,19 +4,18 @@ function PlayerUI.Init(Tab, State)
 
     print("[UI] Player inicializado.")
 
-    -- =========================
+    ------------------------------------------------------------
     -- MOVEMENT
-    -- =========================
+    ------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Movement",
-        content = "Configurações de movimentação do jogador."
+        text = "Configurações de movimentação do jogador."
     })
 
-    -- Fly
     Tab:CreateToggle({
         name = "Fly",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.Fly = value
@@ -28,22 +27,25 @@ function PlayerUI.Init(Tab, State)
         end,
     })
 
-    -- Fly Speed
     Tab:CreateSlider({
         name = "Fly Speed",
         range = {1, 200},
         increment = 1,
-        currentValue = 50,
+        value = State.FlySpeed or 50,
 
         callback = function(value)
             State.FlySpeed = value
+
+            print(
+                "[Player] FlySpeed:",
+                value
+            )
         end,
     })
 
-    -- Speedhack
     Tab:CreateToggle({
         name = "Speedhack",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.Speedhack = value
@@ -55,79 +57,83 @@ function PlayerUI.Init(Tab, State)
         end,
     })
 
-    -- Speed
     Tab:CreateSlider({
-        name = "Speed",
+        name = "Walk Speed",
         range = {1, 200},
         increment = 1,
-        currentValue = 16,
+        value = State.WalkSpeed or 16,
 
         callback = function(value)
             State.WalkSpeed = value
+
+            print(
+                "[Player] WalkSpeed:",
+                value
+            )
         end,
     })
 
-    -- Infinite Jump
     Tab:CreateToggle({
         name = "Infinite Jump",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.InfiniteJump = value
 
             print(
-                "[Player] Infinite Jump:",
+                "[Player] InfiniteJump:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- Jump Height
     Tab:CreateSlider({
         name = "Jump Height",
         range = {1, 200},
         increment = 1,
-        currentValue = 50,
+        value = State.JumpHeight or 50,
 
         callback = function(value)
             State.JumpHeight = value
+
+            print(
+                "[Player] JumpHeight:",
+                value
+            )
         end,
     })
 
-    -- Ignore Jump Lock
     Tab:CreateToggle({
         name = "Ignore Jump Lock",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.IgnoreJumpLock = value
 
             print(
-                "[Player] Ignore Jump Lock:",
+                "[Player] IgnoreJumpLock:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- Bunny Hop
     Tab:CreateToggle({
         name = "Bunny Hop",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.BunnyHop = value
 
             print(
-                "[Player] Bunny Hop:",
+                "[Player] BunnyHop:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- Noclip
     Tab:CreateToggle({
         name = "Noclip",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.Noclip = value
@@ -139,279 +145,350 @@ function PlayerUI.Init(Tab, State)
         end,
     })
 
-    -- =========================
-    -- UTILITY
-    -- =========================
+    ------------------------------------------------------------
+    -- ANIMATION / UTILITY
+    ------------------------------------------------------------
 
-    Tab:CreateParagraph({
-        name = "Utility",
-        content = "Utilidades do jogador."
+    Tab:CreateText({
+        name = "Animation & Utility",
+        text = "Configurações de animação e utilidades do jogador."
     })
 
-    -- No Anims
     Tab:CreateToggle({
         name = "No Anims",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.NoAnims = value
 
             print(
-                "[Player] No Anims:",
+                "[Player] NoAnims:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- Anim Speed
     Tab:CreateSlider({
-        name = "Anim Speed",
-        range = {0, 5},
-        increment = 0.1,
-        currentValue = 1,
+        name = "Animation Speed",
+        range = {1, 500},
+        increment = 1,
+        value = State.AnimSpeed or 1,
 
         callback = function(value)
             State.AnimSpeed = value
+
+            print(
+                "[Player] AnimSpeed:",
+                value
+            )
         end,
     })
 
-    -- Speed
     Tab:CreateSlider({
         name = "Utility Speed",
-        range = {0, 200},
+        range = {1, 200},
         increment = 1,
-        currentValue = 16,
+        value = State.UtilitySpeed or 16,
 
         callback = function(value)
             State.UtilitySpeed = value
+
+            print(
+                "[Player] UtilitySpeed:",
+                value
+            )
         end,
     })
 
-    -- Anti AFK
     Tab:CreateToggle({
         name = "Anti AFK",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.AntiAFK = value
 
             print(
-                "[Player] Anti AFK:",
+                "[Player] AntiAFK:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- Kill Self
+    ------------------------------------------------------------
+    -- CHARACTER
+    ------------------------------------------------------------
+
+    Tab:CreateText({
+        name = "Character",
+        text = "Configurações relacionadas ao personagem."
+    })
+
     Tab:CreateButton({
-        name = "Kill Self",
+        name = "Request Kill Self",
+        description = "Solicita a ação de teste de morte do próprio personagem.",
 
         callback = function()
-            print("[Player] Kill Self acionado.")
-
             State.KillSelfRequested = true
+
+            print(
+                "[Player] KillSelfRequested = true"
+            )
         end,
     })
 
-    -- TP Back on Death
     Tab:CreateToggle({
-        name = "TP Back on Death",
-        currentValue = false,
+        name = "TP Back On Death",
+        value = false,
 
         callback = function(value)
             State.TPBackOnDeath = value
 
             print(
-                "[Player] TP Back on Death:",
+                "[Player] TPBackOnDeath:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- No Killbricks
     Tab:CreateToggle({
-        name = "No Killbricks",
-        currentValue = false,
+        name = "No Kill Bricks",
+        value = false,
 
         callback = function(value)
             State.NoKillbricks = value
 
             print(
-                "[Player] No Killbricks:",
+                "[Player] NoKillbricks:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- Anti Void
     Tab:CreateToggle({
         name = "Anti Void",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.AntiVoid = value
 
             print(
-                "[Player] Anti Void:",
+                "[Player] AntiVoid:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- No Slow
     Tab:CreateToggle({
         name = "No Slow",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.NoSlow = value
 
             print(
-                "[Player] No Slow:",
+                "[Player] NoSlow:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
-    -- =========================
-    -- MISC
-    -- =========================
+    ------------------------------------------------------------
+    -- SERVER
+    ------------------------------------------------------------
 
-    Tab:CreateParagraph({
-        name = "Misc",
-        content = "Configurações diversas do jogador e servidor."
+    Tab:CreateText({
+        name = "Server",
+        text = "Configurações relacionadas ao servidor."
     })
 
     Tab:CreateToggle({
         name = "Infinite Yield",
-        currentValue = false,
+        value = false,
+
         callback = function(value)
             State.InfiniteYield = value
-            print("[Player] Infinite Yield:", value and "ON" or "OFF")
+
+            print(
+                "[Player] InfiniteYield:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
     Tab:CreateToggle({
         name = "Auto Rejoin",
-        currentValue = false,
+        value = false,
+
         callback = function(value)
             State.AutoRejoin = value
-            print("[Player] Auto Rejoin:", value and "ON" or "OFF")
+
+            print(
+                "[Player] AutoRejoin:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
     Tab:CreateToggle({
         name = "Kick Timer",
-        currentValue = false,
+        value = false,
+
         callback = function(value)
             State.KickTimer = value
-            print("[Player] Kick Timer:", value and "ON" or "OFF")
+
+            print(
+                "[Player] KickTimer:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
     Tab:CreateSlider({
-        name = "Minutes",
+        name = "Kick Timer Minutes",
         range = {1, 120},
         increment = 1,
-        currentValue = 10,
-        suffix = " min",
+        value = State.KickMinutes or 10,
+
         callback = function(value)
             State.KickMinutes = value
+
+            print(
+                "[Player] KickMinutes:",
+                value
+            )
         end,
     })
 
     Tab:CreateToggle({
-        name = "Join/Leave Logger",
-        currentValue = false,
+        name = "Join Leave Logger",
+        value = false,
+
         callback = function(value)
             State.JoinLeaveLogger = value
+
             print(
-                "[Player] Join/Leave Logger:",
+                "[Player] JoinLeaveLogger:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
     Tab:CreateButton({
-        name = "Server Hop",
+        name = "Request Server Hop",
+        description = "Registra uma solicitação de troca de servidor.",
+
         callback = function()
             State.ServerHopRequested = true
-            print("[Player] Server Hop solicitado.")
+
+            print(
+                "[Player] ServerHopRequested = true"
+            )
         end,
     })
 
     Tab:CreateButton({
-        name = "Rejoin Server",
+        name = "Request Rejoin",
+        description = "Registra uma solicitação de reconexão.",
+
         callback = function()
             State.RejoinServerRequested = true
-            print("[Player] Rejoin Server solicitado.")
+
+            print(
+                "[Player] RejoinServerRequested = true"
+            )
         end,
     })
 
-    Tab:CreateParagraph({
-        name = "Server Age",
-        content = "Aguardando dados do servidor..."
+    ------------------------------------------------------------
+    -- CHAT
+    ------------------------------------------------------------
+
+    Tab:CreateText({
+        name = "Chat",
+        text = "Configurações relacionadas ao chat."
     })
 
     Tab:CreateToggle({
         name = "Chat Logger",
-        currentValue = false,
+        value = false,
+
         callback = function(value)
             State.ChatLogger = value
-            print("[Player] Chat Logger:", value and "ON" or "OFF")
+
+            print(
+                "[Player] ChatLogger:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
     Tab:CreateInput({
         name = "Spam Message",
-        placeholderText = "Digite a mensagem...",
-        currentValue = "",
+        placeholder = "Digite uma mensagem...",
+
         removeTextAfterFocusLost = false,
-        callback = function(text)
-            State.SpamMessage = text
-            print("[Player] Mensagem definida:", text)
+
+        callback = function(value)
+            State.SpamMessage = value
+
+            print(
+                "[Player] SpamMessage:",
+                value
+            )
         end,
     })
 
     Tab:CreateSlider({
-        name = "Delay",
-        range = {0.1, 10},
-        increment = 0.1,
-        currentValue = 1,
-        suffix = " s",
+        name = "Chat Delay",
+        range = {1, 60},
+        increment = 1,
+        value = State.ChatDelay or 1,
+        suffix = " sec",
+
         callback = function(value)
             State.ChatDelay = value
+
+            print(
+                "[Player] ChatDelay:",
+                value
+            )
         end,
     })
 
     Tab:CreateToggle({
         name = "Chat Spammer",
-        currentValue = false,
+        value = false,
+
         callback = function(value)
             State.ChatSpammer = value
-            print("[Player] Chat Spammer:", value and "ON" or "OFF")
+
+            print(
+                "[Player] ChatSpammer:",
+                value and "ON" or "OFF"
+            )
         end,
     })
 
-    -- =========================
+    ------------------------------------------------------------
     -- IDENTITY
-    -- =========================
+    ------------------------------------------------------------
 
-    Tab:CreateParagraph({
+    Tab:CreateText({
         name = "Identity",
-        content = "Configurações de identidade e visibilidade do jogador."
+        text = "Configuração de identidade visual armazenada no State."
     })
 
     Tab:CreateInput({
         name = "Display Name",
-        placeholderText = "Novo Display Name...",
-        currentValue = "",
+        placeholder = "Display Name",
+
+        removeTextAfterFocusLost = false,
 
         callback = function(value)
             State.DisplayName = value
 
             print(
-                "[Player] Display Name:",
+                "[Player] DisplayName:",
                 value
             )
         end,
@@ -419,8 +496,9 @@ function PlayerUI.Init(Tab, State)
 
     Tab:CreateInput({
         name = "Username",
-        placeholderText = "Novo Username...",
-        currentValue = "",
+        placeholder = "Username",
+
+        removeTextAfterFocusLost = false,
 
         callback = function(value)
             State.Username = value
@@ -433,66 +511,62 @@ function PlayerUI.Init(Tab, State)
     })
 
     Tab:CreateButton({
-        name = "Apply",
+        name = "Apply Identity",
+        description = "Registra uma solicitação de aplicação de identidade.",
+
         callback = function()
             State.IdentityApplyRequested = true
 
-            print("[Player] Apply Identity solicitado.")
-        end,
-    })
-
-    Tab:CreateButton({
-        name = "Reset",
-        callback = function()
-            State.IdentityResetRequested = true
-
-            print("[Player] Reset Identity solicitado.")
-        end,
-    })
-
-    Tab:CreateParagraph({
-        name = "Player",
-        content = "Selecione o jogador para as opções de identidade."
-    })
-
-    local IdentityPlayer = Tab:CreateDropdown({
-        name = "Player",
-        options = {
-            "Nenhum jogador encontrado"
-        },
-
-        currentOption = {
-            "Nenhum jogador encontrado"
-        },
-
-        callback = function(option)
-            State.IdentityPlayer = option
-
             print(
-                "[Player] Identity Player:",
-                option
+                "[Player] IdentityApplyRequested = true"
             )
         end,
     })
 
     Tab:CreateButton({
-        name = "Refresh",
+        name = "Reset Identity",
+        description = "Registra uma solicitação para restaurar a identidade.",
+
+        callback = function()
+            State.IdentityResetRequested = true
+
+            print(
+                "[Player] IdentityResetRequested = true"
+            )
+        end,
+    })
+
+    Tab:CreateButton({
+        name = "Refresh Identity",
+        description = "Solicita atualização da identidade armazenada.",
+
         callback = function()
             State.IdentityRefreshRequested = true
 
-            print("[Player] Atualizando jogadores...")
+            print(
+                "[Player] IdentityRefreshRequested = true"
+            )
         end,
+    })
+
+    ------------------------------------------------------------
+    -- CHARACTER VISIBILITY
+    ------------------------------------------------------------
+
+    Tab:CreateText({
+        name = "Visibility",
+        text = "Configurações de visibilidade do personagem e jogadores."
     })
 
     Tab:CreateToggle({
         name = "Hide Character",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.HideCharacter = value
 
             print(
-                "[Player] Hide Character:",
+                "[Player] HideCharacter:",
                 value and "ON" or "OFF"
             )
         end,
@@ -500,13 +574,13 @@ function PlayerUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Hide Other Players",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.HideOtherPlayers = value
 
             print(
-                "[Player] Hide Other Players:",
+                "[Player] HideOtherPlayers:",
                 value and "ON" or "OFF"
             )
         end,
@@ -514,13 +588,13 @@ function PlayerUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Hide All Players",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.HideAllPlayers = value
 
             print(
-                "[Player] Hide All Players:",
+                "[Player] HideAllPlayers:",
                 value and "ON" or "OFF"
             )
         end,
@@ -528,18 +602,68 @@ function PlayerUI.Init(Tab, State)
 
     Tab:CreateToggle({
         name = "Hide All Names",
-        currentValue = false,
+        value = false,
 
         callback = function(value)
             State.HideAllNames = value
 
             print(
-                "[Player] Hide All Names:",
+                "[Player] HideAllNames:",
                 value and "ON" or "OFF"
             )
         end,
     })
 
+    ------------------------------------------------------------
+    -- DEBUG
+    ------------------------------------------------------------
+
+    Tab:CreateText({
+        name = "Player Debug",
+        text = "Mostra os principais valores armazenados no State."
+    })
+
+    Tab:CreateButton({
+        name = "Player Debug Test",
+        description = "Exibe o estado atual da aba Player.",
+
+        callback = function()
+
+            print("================================")
+            print("[PlayerUI] DEBUG")
+            print("================================")
+
+            print("Fly:", State.Fly)
+            print("FlySpeed:", State.FlySpeed)
+            print("Speedhack:", State.Speedhack)
+            print("WalkSpeed:", State.WalkSpeed)
+            print("InfiniteJump:", State.InfiniteJump)
+            print("JumpHeight:", State.JumpHeight)
+            print("Noclip:", State.Noclip)
+
+            print("NoAnims:", State.NoAnims)
+            print("AnimSpeed:", State.AnimSpeed)
+            print("AntiAFK:", State.AntiAFK)
+
+            print("AutoRejoin:", State.AutoRejoin)
+            print("JoinLeaveLogger:", State.JoinLeaveLogger)
+
+            print("DisplayName:", State.DisplayName)
+            print("Username:", State.Username)
+
+            print("HideCharacter:", State.HideCharacter)
+            print("HideOtherPlayers:", State.HideOtherPlayers)
+            print("HideAllPlayers:", State.HideAllPlayers)
+            print("HideAllNames:", State.HideAllNames)
+
+            print("================================")
+
+        end,
+    })
+
+    print("[UI] Player UI carregada com sucesso.")
+
+    return PlayerUI
 end
 
 return PlayerUI
