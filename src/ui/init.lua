@@ -7,9 +7,30 @@ function UI.Init(Config)
     local UserInputService = game:GetService("UserInputService")
 
     local function LoadModule(path)
-        local url = Config.BaseURL .. path .. "?v=" .. tostring(os.clock())
+
+        local url =
+            Config.BaseURL
+            .. path
+            .. "?v="
+            .. tostring(os.clock())
+
+        print("[UI] Carregando:", path)
 
         local source = game:HttpGet(url)
+
+        print(
+            "[UI] Source recebido:",
+            path,
+            "tamanho =",
+            #source
+        )
+
+        if source == nil or source == "" then
+            error(
+                "[UI] Source vazio para "
+                .. path
+            )
+        end
 
         local success, result = pcall(function()
             return loadstring(source)()
@@ -24,22 +45,28 @@ function UI.Init(Config)
             )
         end
 
+        if result == nil then
+            error(
+                "[UI] Modulo "
+                .. path
+                .. " retornou nil."
+            )
+        end
+
+        print(
+            "[UI] Modulo carregado:",
+            path,
+            result
+        )
+
         return result
     end
-
-    ------------------------------------------------------------
-    -- CORE
-    ------------------------------------------------------------
 
     local State = LoadModule("src/core/state.lua")
     print("[UI] State central carregado.")
 
     local Services = LoadModule("src/core/services.lua")
     print("[UI] Services central carregado.")
-
-    ------------------------------------------------------------
-    -- RAYFIELD
-    ------------------------------------------------------------
 
     local Rayfield = loadstring(
         game:HttpGet("https://sirius.menu/gen2")
@@ -77,24 +104,13 @@ function UI.Init(Config)
         name = "Navigation"
     })
 
-    ------------------------------------------------------------
-    -- STATE UI
-    ------------------------------------------------------------
-
     State.Visible = true
     State.Rayfield = Rayfield
     State.Window = Window
     State.Tabs = Tabs
     State.Services = Services
 
-    ------------------------------------------------------------
-    -- TOGGLE UI
-    ------------------------------------------------------------
-
-    UserInputService.InputBegan:Connect(function(
-        Input,
-        GameProcessed
-    )
+    UserInputService.InputBegan:Connect(function(Input, GameProcessed)
 
         if GameProcessed then
             return
@@ -104,9 +120,7 @@ function UI.Init(Config)
 
             State.Visible = not State.Visible
 
-            Rayfield:SetVisibility(
-                State.Visible
-            )
+            Rayfield:SetVisibility(State.Visible)
 
             print(
                 "[UI] Visibilidade:",
@@ -115,65 +129,26 @@ function UI.Init(Config)
         end
     end)
 
-    ------------------------------------------------------------
-    -- FARM MODULES
-    ------------------------------------------------------------
-
-    local Mobs = LoadModule(
-        "src/farm/mobs.lua"
-    )
-
+    local Mobs = LoadModule("src/farm/mobs.lua")
     print("[UI] Mobs carregado.")
 
-    local Boss = LoadModule(
-        "src/farm/boss.lua"
-    )
-
+    local Boss = LoadModule("src/farm/boss.lua")
     print("[UI] Boss carregado.")
 
-    local Quests = LoadModule(
-        "src/farm/quests.lua"
-    )
-
+    local Quests = LoadModule("src/farm/quests.lua")
     print("[UI] Quests carregado.")
 
-    local FarmService = LoadModule(
-        "src/farm/service.lua"
-    )
-
+    local FarmService = LoadModule("src/farm/service.lua")
     print("[UI] FarmService carregado.")
 
-    ------------------------------------------------------------
-    -- DEBUG
-    ------------------------------------------------------------
-
-    local Scanner = LoadModule(
-        "src/debug/scanner.lua"
-    )
-
+    local Scanner = LoadModule("src/debug/scanner.lua")
     print("[UI] Scanner carregado.")
 
-    ------------------------------------------------------------
-    -- SERVICES
-    ------------------------------------------------------------
-
-    Services.Register(
-        "Farm",
-        FarmService
-    )
-
+    Services.Register("Farm", FarmService)
     print("[UI] FarmService registrado.")
 
-    Services.Register(
-        "Scanner",
-        Scanner
-    )
-
+    Services.Register("Scanner", Scanner)
     print("[UI] Scanner registrado.")
-
-    ------------------------------------------------------------
-    -- FARM INITIALIZATION
-    ------------------------------------------------------------
 
     FarmService.Init(
         State,
@@ -183,143 +158,73 @@ function UI.Init(Config)
     )
 
     print("[UI] FarmService inicializado.")
-    print("[UI] Mobs conectado ao FarmService.")
-    print("[UI] Boss conectado ao FarmService.")
-    print("[UI] Quests conectado ao FarmService.")
-
-    ------------------------------------------------------------
-    -- DEBUG UI
-    ------------------------------------------------------------
-
-    Tabs.Farm:CreateText({
-        name = "Project Slayers 2 - Debug",
-        text = "Ferramentas de diagnóstico para descobrir a estrutura real do jogo."
-    })
-
-    Tabs.Farm:CreateButton({
-        name = "Scan Quest NPCs",
-
-        callback = function()
-
-            print("")
-            print("================================")
-            print("[UI] Iniciando Scan Quest NPCs")
-            print("================================")
-
-            local success, result = pcall(function()
-                return Scanner.ScanQuestNPCs()
-            end)
-
-            if not success then
-                warn(
-                    "[UI] Erro no Scanner:",
-                    result
-                )
-
-                return
-            end
-
-            print(
-                "[UI] Scan concluído. NPCs encontrados:",
-                result
-            )
-        end,
-    })
-
-    Tabs.Farm:CreateButton({
-        name = "Scanner Debug",
-
-        callback = function()
-
-            local success, result = pcall(function()
-                return Scanner.Debug()
-            end)
-
-            if not success then
-                warn(
-                    "[UI] Erro no Scanner Debug:",
-                    result
-                )
-            end
-        end,
-    })
-
-    Tabs.Farm:CreateInput({
-        name = "Search Workspace",
-
-        placeholder = "Digite um nome...",
-
-        removeTextAfterFocusLost = false,
-
-        callback = function(value)
-
-            if type(value) ~= "string" then
-                return
-            end
-
-            if value == "" then
-                return
-            end
-
-            print("")
-            print(
-                "[UI] Procurando:",
-                value
-            )
-
-            local success, result = pcall(function()
-                return Scanner.Search(value)
-            end)
-
-            if not success then
-                warn(
-                    "[UI] Erro na busca:",
-                    result
-                )
-
-                return
-            end
-
-            print(
-                "[UI] Busca concluída. Resultados:",
-                result
-            )
-        end,
-    })
-
-    ------------------------------------------------------------
-    -- UI PAGES
-    ------------------------------------------------------------
 
     local Pages = {}
 
-    Pages.Farm = LoadModule(
-        "src/ui/farm.lua"
+    Pages.Farm = LoadModule("src/ui/farm.lua")
+    Pages.Combat = LoadModule("src/ui/combat.lua")
+    Pages.Player = LoadModule("src/ui/player.lua")
+    Pages.ESP = LoadModule("src/ui/esp.lua")
+    Pages.World = LoadModule("src/ui/world.lua")
+    Pages.Navigation = LoadModule("src/ui/navigation.lua")
+
+    print(
+        "[UI] Pages carregadas:",
+        "Farm =", Pages.Farm,
+        "Combat =", Pages.Combat,
+        "Player =", Pages.Player,
+        "ESP =", Pages.ESP,
+        "World =", Pages.World,
+        "Navigation =", Pages.Navigation
     )
 
-    Pages.Combat = LoadModule(
-        "src/ui/combat.lua"
-    )
+    if type(Pages.Farm) ~= "table" then
+        error("[UI] Pages.Farm inválido.")
+    end
 
-    Pages.Player = LoadModule(
-        "src/ui/player.lua"
-    )
+    if type(Pages.Combat) ~= "table" then
+        error("[UI] Pages.Combat inválido.")
+    end
 
-    Pages.ESP = LoadModule(
-        "src/ui/esp.lua"
-    )
+    if type(Pages.Player) ~= "table" then
+        error("[UI] Pages.Player inválido.")
+    end
 
-    Pages.World = LoadModule(
-        "src/ui/world.lua"
-    )
+    if type(Pages.ESP) ~= "table" then
+        error("[UI] Pages.ESP inválido.")
+    end
 
-    Pages.Navigation = LoadModule(
-        "src/ui/navigation.lua"
-    )
+    if type(Pages.World) ~= "table" then
+        error("[UI] Pages.World inválido.")
+    end
 
-    ------------------------------------------------------------
-    -- INITIALIZE PAGES
-    ------------------------------------------------------------
+    if type(Pages.Navigation) ~= "table" then
+        error("[UI] Pages.Navigation inválido.")
+    end
+
+    if type(Pages.Farm.Init) ~= "function" then
+        error("[UI] Pages.Farm.Init inválido.")
+    end
+
+    if type(Pages.Combat.Init) ~= "function" then
+        error("[UI] Pages.Combat.Init inválido.")
+    end
+
+    if type(Pages.Player.Init) ~= "function" then
+        error("[UI] Pages.Player.Init inválido.")
+    end
+
+    if type(Pages.ESP.Init) ~= "function" then
+        error("[UI] Pages.ESP.Init inválido.")
+    end
+
+    if type(Pages.World.Init) ~= "function" then
+        error("[UI] Pages.World.Init inválido.")
+    end
+
+    if type(Pages.Navigation.Init) ~= "function" then
+        error("[UI] Pages.Navigation.Init inválido.")
+    end
 
     Pages.Farm.Init(
         Tabs.Farm,
@@ -351,38 +256,17 @@ function UI.Init(Config)
         State
     )
 
-    ------------------------------------------------------------
-    -- SAVE REFERENCES
-    ------------------------------------------------------------
-
     State.Pages = Pages
-
     State.Mobs = Mobs
     State.Boss = Boss
     State.Quests = Quests
     State.FarmService = FarmService
     State.Scanner = Scanner
 
-    ------------------------------------------------------------
-    -- FINAL LOG
-    ------------------------------------------------------------
-
     print("[UI] Rayfield carregado.")
     print("[UI] State central conectado.")
     print("[UI] Services central conectado.")
-    print("[UI] Mobs carregado.")
-    print("[UI] Boss carregado.")
-    print("[UI] Quests carregado.")
-    print("[UI] FarmService registrado.")
-    print("[UI] Scanner registrado.")
-    print("[UI] FarmService inicializado.")
-    print("[UI] Mobs conectado ao FarmService.")
-    print("[UI] Boss conectado ao FarmService.")
-    print("[UI] Quests conectado ao FarmService.")
-    print("[UI] Scanner disponível em State.Scanner.")
-    print("[UI] Debug UI configurado.")
-    print("[UI] 6 abas criadas.")
-    print("[UI] LeftShift configurado.")
+    print("[UI] Todas as Pages carregadas.")
 
     return State
 end
